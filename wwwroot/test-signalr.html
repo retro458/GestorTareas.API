@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Prueba SignalR - GestorTareas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #111; color: #0f0; }
+        #estado { font-weight: bold; margin-bottom: 10px; }
+        .evento { border: 1px solid #333; padding: 8px; margin: 6px 0; background: #1a1a1a; }
+        .evento-tarea { border-color: #4a90d9; }
+        .evento-noti { border-color: #d9a54a; }
+    </style>
+</head>
+<body>
+    <h2>Prueba de conexión SignalR - TareasHub</h2>
+    <div id="estado">Conectando...</div>
+    <div id="log"></div>
+
+    <script>
+        const logDiv = document.getElementById("log");
+        const estadoDiv = document.getElementById("estado");
+
+        function log(texto, claseExtra) {
+            const p = document.createElement("p");
+            p.className = "evento " + (claseExtra || "");
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${texto}`;
+            logDiv.prepend(p); // los mas nuevos arriba
+        }
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/tareas", { withCredentials: true })
+            .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        connection.on("TareaActualizada", (tarea) => {
+            log("TareaActualizada -> " + JSON.stringify(tarea), "evento-tarea");
+        });
+
+        connection.on("NuevaNotificacion", (noti) => {
+            log("NuevaNotificacion -> " + JSON.stringify(noti), "evento-noti");
+        });
+
+        connection.onreconnecting(() => {
+            estadoDiv.textContent = "Reconectando...";
+        });
+
+        connection.onclose(() => {
+            estadoDiv.textContent = "Desconectado";
+        });
+
+        connection.start()
+            .then(() => {
+                estadoDiv.textContent = "Conectado correctamente al Hub";
+                log("Conexión establecida.");
+            })
+            .catch(err => {
+                estadoDiv.textContent = "Error al conectar (revisa la consola)";
+                console.error(err);
+                log("ERROR: " + err.message);
+            });
+    </script>
+</body>
+</html>
