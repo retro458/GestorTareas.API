@@ -114,17 +114,28 @@ public class TareaService : ITareaService
         return tareas.Select(MapearTareaResponse);
     }
  
-    public async Task<TareaResponseDto> CambiarEstadoAsync(int tareaId, int nuevoEstadoId, int usuarioActualId)
+   public async Task<TareaResponseDto> CambiarEstadoAsync(int tareaId, int nuevoEstadoId, int usuarioActualId, string rolActual)
     {
-        var tarea = await _context.Tareas.FindAsync(tareaId)
-            ?? throw new Exception("La tarea no existe.");
- 
+       var tarea = await _context.Tareas.FindAsync(tareaId)
+        ?? throw new Exception("La tarea no existe.");
+
+     var nuevoEstado = await _context.Estados.FindAsync(nuevoEstadoId)
+        ?? throw new Exception("El estado especificado no existe.");
+
+     bool esCancelacion = nuevoEstado.NombreEstado == "Cancelada";
+
+      if (esCancelacion)
+     {
+        // Solo Jefe o Encargado pueden cancelar
+        if (rolActual != "Jefe" && rolActual != "Encargado Departamento")
+            throw new UnauthorizedAccessException("Solo un Jefe o Encargado puede cancelar una tarea.");
+        }
+        else
+        {
+        // Cualquier otro cambio de estado sigue siendo exclusivo del empleado asignado
         if (tarea.AsignadoA != usuarioActualId)
             throw new UnauthorizedAccessException("Solo el empleado asignado puede cambiar el estado de esta tarea.");
- 
-        var nuevoEstado = await _context.Estados.FindAsync(nuevoEstadoId)
-            ?? throw new Exception("El estado especificado no existe.");
- 
+        }
         var estadoAnterior = await _context.Estados.FindAsync(tarea.EstadoId);
  
         tarea.EstadoId = nuevoEstadoId;

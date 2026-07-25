@@ -54,22 +54,27 @@ public class TareasController : ControllerBase
     }
 
     [HttpPatch("{id}/estado")]
-    public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBody] ActualizarEstadoTareaDto dto)
+public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBody] ActualizarEstadoTareaDto dto)
+{
+    try
     {
-        try
-        {
-            var tarea = await _tareaService.CambiarEstadoAsync(id, dto.EstadoId, User.ObtenerUsuarioId());
-            return Ok(tarea);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Forbid(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var tarea = await _tareaService.CambiarEstadoAsync(
+            id,
+            dto.EstadoId,
+            User.ObtenerUsuarioId(),
+            User.ObtenerRol()); 
+
+        return Ok(tarea);
     }
+    catch (UnauthorizedAccessException ex)
+    {
+        return Forbid(ex.Message);
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new { error = ex.Message });
+    }
+}
 
     [HttpPatch("{id}/reasignar")]
     [Authorize(Roles = "Jefe,Encargado Departamento")]

@@ -158,3 +158,4 @@
 /home/erickbaudriz/Documentos/GestorTareas/GestorTareas.API/obj/Debug/net9.0/ref/GestorTareas.API.dll
 /home/erickbaudriz/Documentos/GestorTareas/GestorTareas.API/bin/Debug/net9.0/GestorTareas.API.staticwebassets.runtime.json
 /home/erickbaudriz/Documentos/GestorTareas/GestorTareas.API/obj/Debug/net9.0/compressed/tthu8sgoc7-c3r7xi0m6c.gz
+/home/erickbaudriz/Documentos/GestorTareas/GestorTareas.API/obj/Debug/net9.0/GestorTareas.API.sourcelink.json
