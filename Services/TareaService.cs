@@ -160,28 +160,37 @@ public class TareaService : ITareaService
  
     public async Task<TareaResponseDto> ReasignarTareaAsync(int tareaId, int nuevoAsignadoA, int usuarioQueReasignaId, string rolQueReasigna, int? departamentoQueReasignaId)
     {
-        if (rolQueReasigna != "Jefe" && rolQueReasigna != "Encargado Departamento")
-            throw new UnauthorizedAccessException("No tiene permisos para reasignar tareas.");
- 
-        var tarea = await _context.Tareas
-            .Include(t => t.Estado)
-            .FirstOrDefaultAsync(t => t.Id == tareaId)
-            ?? throw new Exception("La tarea no existe.");
- 
-        if (tarea.Estado.NombreEstado == ESTADO_COMPLETADA || tarea.Estado.NombreEstado == ESTADO_CANCELADA)
-            throw new Exception($"No se puede reasignar una tarea en estado '{tarea.Estado.NombreEstado}'.");
- 
-        var nuevoEmpleado = await _context.Usuarios.FindAsync(nuevoAsignadoA)
-            ?? throw new Exception("El nuevo empleado a asignar no existe.");
- 
-        if (rolQueReasigna == "Encargado Departamento" && nuevoEmpleado.DepartamentoId != departamentoQueReasignaId)
-            throw new UnauthorizedAccessException("Solo puede reasignar tareas a empleados de su propio departamento.");
- 
-        var empleadoAnteriorId = tarea.AsignadoA;
-        var empleadoAnterior = await _context.Usuarios.FindAsync(empleadoAnteriorId);
- 
-        tarea.AsignadoA = nuevoAsignadoA;
-        await _context.SaveChangesAsync();
+       
+    if (rolQueReasigna != "Jefe" && rolQueReasigna != "Encargado Departamento")
+        throw new UnauthorizedAccessException("No tiene permisos para reasignar tareas.");
+
+    var tarea = await _context.Tareas
+        .Include(t => t.Estado)
+        .FirstOrDefaultAsync(t => t.Id == tareaId)
+        ?? throw new Exception("La tarea no existe.");
+
+    if (tarea.Estado.NombreEstado == ESTADO_COMPLETADA || tarea.Estado.NombreEstado == ESTADO_CANCELADA)
+        throw new Exception($"No se puede reasignar una tarea en estado '{tarea.Estado.NombreEstado}'.");
+
+    var nuevoEmpleado = await _context.Usuarios.FindAsync(nuevoAsignadoA)
+        ?? throw new Exception("El nuevo empleado a asignar no existe.");
+
+    // NUEVO: el nuevo empleado debe pertenecer al MISMO departamento que la tarea,
+    // sin importar quien reasigne (ni siquiera el Jefe puede cruzar departamentos).
+    if (nuevoEmpleado.DepartamentoId != tarea.DepartamentoId)
+        throw new Exception("No se puede reasignar la tarea a un empleado de un departamento distinto al original.");
+
+    // Esta validacion queda redundante con la de arriba para el caso de
+    // Encargado (ya que su propio departamento coincide con el de sus tareas),
+    // pero la dejamos por claridad y como capa adicional explicita.
+    if (rolQueReasigna == "Encargado Departamento" && nuevoEmpleado.DepartamentoId != departamentoQueReasignaId)
+        throw new UnauthorizedAccessException("Solo puede reasignar tareas a empleados de su propio departamento.");
+
+    var empleadoAnteriorId = tarea.AsignadoA;
+    var empleadoAnterior = await _context.Usuarios.FindAsync(empleadoAnteriorId);
+
+    tarea.AsignadoA = nuevoAsignadoA;
+    await _context.SaveChangesAsync();
  
         _context.HistorialTareas.Add(new HistorialTarea
         {

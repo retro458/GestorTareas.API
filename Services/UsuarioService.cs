@@ -12,64 +12,68 @@ namespace GestorTareas.API.Services;
 public class UsuarioService : IUsuarioService 
 {
     private readonly AppDbContext _context;
-    public UsuarioService(AppDbContext context)
+    private readonly IEmailService _emailService;
+    public UsuarioService(AppDbContext context, IEmailService emailService)
     {
         _context = context;
+        _emailService = emailService;
     }
 
-    public async Task<UsuarioResponseDto> RegisterAsync(string nombre,string email, string password, string nombreRol, string departamento)
+   public async Task<UsuarioResponseDto> RegisterAsync(
+    string nombre, string email, string password, string nombreRol, string departamento,
+    string rolCreador, int? departamentoCreadorId)
+{
+    var usuarioExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
+    if (usuarioExistente != null)
+        throw new Exception("El usuario ya existe.");
+
+    var rol = await _context.Roles.FirstOrDefaultAsync(r => r.NombreRol == nombreRol);
+    if (rol == null)
+        throw new Exception("El rol especificado no existe.");
+
+    if (rol.NombreRol == "Jefe")
     {
-        // Verificar si el usuario ya existe
-        var usuarioExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
-        if (usuarioExistente != null)
-        {
-            throw new Exception("El usuario ya existe.");
-        }
-
-        // Buscar el rol por nombre
-        var rol = await _context.Roles.FirstOrDefaultAsync(r => r.NombreRol == nombreRol);
-        if (rol == null)
-        
-            throw new Exception("El rol especificado no existe.");
-        if (rol.NombreRol == "Jefe")
-        {
-            var jefeExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.RolId == rol.RolId);
-            if (jefeExistente != null)
-            {
-                throw new Exception("ya hay un jefe registrado, no se puede registrar otro jefe.");
-            }
-        }
-
-        // Buscar el departamento por nombre
-        var departamentoExistente = await _context.Departamentos.FirstOrDefaultAsync(d => d.Nombre == departamento);
-        if (departamentoExistente == null)
-        {
-            throw new Exception("El departamento especificado no existe.");
-        }
-
-        // Crear el nuevo usuario
-        var nuevoUsuario = new Usuario
-        {
-            Nombre = nombre,
-            Email = email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
-            RolId = rol.RolId,
-            DepartamentoId = departamentoExistente.Id,
-            Activo = true
-        };
-
-        // Agregar el usuario a la base de datos
-        _context.Usuarios.Add(nuevoUsuario);
-        await _context.SaveChangesAsync();
-
-        return new UsuarioResponseDto
-        {
-            Email = nuevoUsuario.Email,
-            NombreRol = rol.NombreRol,
-            Departamento = departamentoExistente.Nombre,
-        };
+        var jefeExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.RolId == rol.RolId);
+        if (jefeExistente != null)
+            throw new Exception("Ya hay un jefe registrado, no se puede registrar otro jefe.");
     }
 
+    // NUEVO: un Encargado solo puede estar creando usuarios de su propio rol/alcance
+    if (rolCreador != "Jefe" && rolCreador != "Encargado Departamento")
+        throw new UnauthorizedAccessException("No tiene permisos para crear usuarios.");
+
+    var departamentoExistente = await _context.Departamentos.FirstOrDefaultAsync(d => d.Nombre == departamento);
+    if (departamentoExistente == null)
+        throw new Exception("El departamento especificado no existe.");
+
+    // NUEVO: el Encargado solo puede crear usuarios en su propio departamento,
+    // sin importar que departamento haya intentado mandar el frontend.
+    if (rolCreador == "Encargado Departamento" && departamentoExistente.Id != departamentoCreadorId)
+        throw new UnauthorizedAccessException("Solo puede crear usuarios dentro de su propio departamento.");
+        
+    var tokenVerificacion = Guid.NewGuid().ToString(); // Genera un token de verificación único
+    var nuevoUsuario = new Usuario
+    {
+        Nombre = nombre,
+        Email = email,
+        PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+        RolId = rol.RolId,
+        DepartamentoId = departamentoExistente.Id,
+        Activo = true,
+        EmailVerificacion = false,
+        TokenVerificacion = tokenVerificacion
+    };
+
+    _context.Usuarios.Add(nuevoUsuario);
+    await _context.SaveChangesAsync();
+    await _emailService.EnviarCorreoVerificacionAsync(nuevoUsuario.Email, nuevoUsuario.Nombre, tokenVerificacion);
+    return new UsuarioResponseDto
+    {
+        Email = nuevoUsuario.Email,
+        NombreRol = rol.NombreRol,
+        Departamento = departamentoExistente.Nombre,
+    };
+}
     public async Task<UsuarioResponseDto> GetUsuarioByIdAsync(int id)
     {
         var usuario = await _context.Usuarios

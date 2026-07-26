@@ -145,6 +145,8 @@ builder.Services.AddScoped<GestorTareas.API.Services.IDepartamentoService, Gesto
 builder.Services.AddScoped<GestorTareas.API.Services.ITareaService, GestorTareas.API.Services.TareaService>();
 builder.Services.AddScoped<GestorTareas.API.Services.INotificacionService, GestorTareas.API.Services.NotificacionService>();
 builder.Services.AddScoped<GestorTareas.API.Services.IEstadoService, GestorTareas.API.Services.EstadoService>();
+builder.Services.AddHttpClient<GestorTareas.API.Services.IEmailService, GestorTareas.API.Services.EmailService>();
+
 var app = builder.Build();
 
 

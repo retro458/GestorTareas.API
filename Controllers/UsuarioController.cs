@@ -3,6 +3,9 @@ using GestorTareas.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GestorTareas.API.Extensions;
+using GestorTareas.API.Data;
+using Microsoft.EntityFrameworkCore;
+using GestorTareas.API.Models;
 namespace GestorTareas.API.Controllers;
 
 [Route("api/[controller]")]
@@ -10,10 +13,11 @@ namespace GestorTareas.API.Controllers;
 public class UsuarioController : ControllerBase
 {
     private readonly IUsuarioService _usuarioService;
-
-    public UsuarioController(IUsuarioService usuarioService)
+    private readonly AppDbContext _context; 
+    public UsuarioController(IUsuarioService usuarioService, AppDbContext context)
     {
         _usuarioService = usuarioService;
+        _context = context;
     }
 
     [HttpPost("register")]
@@ -22,7 +26,7 @@ public class UsuarioController : ControllerBase
     {
         try
         {
-            await _usuarioService.RegisterAsync(request.Nombre!, request.Email!, request.Password!, request.NombreRol!, request.Departamento!);
+            await _usuarioService.RegisterAsync(request.Nombre!, request.Email!, request.Password!, request.NombreRol!, request.Departamento!, User.ObtenerRol(), User.ObtenerDepartamentoId());
             return Ok(new { message = "Usuario registrado exitosamente" });
         }
         catch (Exception ex)
@@ -49,5 +53,19 @@ public async Task<ActionResult<IEnumerable<UsuarioResponseDto>>> ObtenerTodosLos
 {
     var empleados = await _usuarioService.GetTodosLosEmpleadosAsync();
     return Ok(empleados);
+}
+
+[HttpGet("verificar-cuenta")]
+public async Task<IActionResult> VerificarCuenta([FromQuery] string token)
+{
+    var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.TokenVerificacion == token);
+    if (usuario == null)
+        return BadRequest(new { error = "Token de verificación inválido o ya utilizado." });
+
+    usuario.EmailVerificacion = true;
+    usuario.TokenVerificacion = null;
+    await _context.SaveChangesAsync();
+
+    return Ok(new { mensaje = "Cuenta verificada correctamente. Ya puedes iniciar sesión." });
 }
 }
