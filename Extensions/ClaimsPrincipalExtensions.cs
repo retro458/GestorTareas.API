@@ -17,9 +17,9 @@ public static class ClaimsPrincipalExtensions
         return user.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
     }
 
-    public static int? ObtenerDepartamentoId(this ClaimsPrincipal user)
+   public static List<int> ObtenerDepartamentosIds(this ClaimsPrincipal user)
     {
-        var deptoClaim = user.FindFirst("DepartamentoId")?.Value;
-        return deptoClaim != null && int.TryParse(deptoClaim, out var id) ? id : null;
+    var claims = user.FindAll("DepartamentoId");
+    return claims.Select(c => int.Parse(c.Value)).ToList();
     }
 }

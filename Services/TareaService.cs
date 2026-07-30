@@ -21,17 +21,21 @@ public class TareaService : ITareaService
     }
 
  
-    public async Task<TareaResponseDto> CrearTareaAsync(CrearTareaDto dto, int creadoPorId, string rolCreador, int? departamentoCreadorId)
+    public async Task<TareaResponseDto> CrearTareaAsync(CrearTareaDto dto, int creadoPorId, string rolCreador, List<int> departamentosCreadorIds)
     {
-        if (rolCreador != "Jefe" && rolCreador != "Encargado Departamento")
-            throw new UnauthorizedAccessException("No tiene permisos para crear tareas.");
- 
-        var empleado = await _context.Usuarios.FindAsync(dto.AsignadoA)
-            ?? throw new Exception("El empleado a asignar no existe.");
- 
-        if (rolCreador == "Encargado Departamento" && empleado.DepartamentoId != departamentoCreadorId)
-            throw new UnauthorizedAccessException("Solo puede asignar tareas a empleados de su propio departamento.");
- 
+        // El Encargado solo puede crear tareas en departamentos donde el tenga acceso
+        if (rolCreador == "Encargado Departamento" && !departamentosCreadorIds.Contains(dto.DepartamentoId))
+    throw new UnauthorizedAccessException("Solo puede crear tareas en departamentos a su cargo.");
+
+ var empleado = await _context.Usuarios
+    .Include(u => u.UsuariosDepartamentos)
+    .FirstOrDefaultAsync(u => u.Id == dto.AsignadoA)
+    ?? throw new Exception("El empleado a asignar no existe.");
+
+    // El empleado destino debe pertenecer al departamento elegido para la tarea
+    var empleadoDeptosIds = empleado.UsuariosDepartamentos.Select(d => d.DepartamentoId);
+if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
+    throw new Exception("El empleado seleccionado no pertenece al departamento elegido para esta tarea.");
         var existeTareaActiva = await _context.Tareas
             .Include(t => t.Estado)
             .AnyAsync(t => t.Titulo == dto.Titulo
@@ -94,7 +98,7 @@ public class TareaService : ITareaService
         return tareaResponse;
     }
  
-    public async Task<IEnumerable<TareaResponseDto>> ObtenerTareasAsync(int usuarioActualId, string rolActual, int? departamentoActualId)
+    public async Task<IEnumerable<TareaResponseDto>> ObtenerTareasAsync(int usuarioActualId, string rolActual, List<int> departamentosActualIds)
     {
         IQueryable<Tarea> query = _context.Tareas
             .Include(t => t.Estado)
@@ -104,7 +108,9 @@ public class TareaService : ITareaService
         query = rolActual switch
         {
             "Jefe" => query,
-            "Encargado Departamento" => query.Where(t => t.DepartamentoId == departamentoActualId),
+            "Encargado Departamento" => departamentosActualIds != null && departamentosActualIds.Any()
+                ? query.Where(t => t.DepartamentoId.HasValue && departamentosActualIds.Contains(t.DepartamentoId.Value))
+                : query.Where(t => false),
             "Empleado" => query.Where(t => t.AsignadoA == usuarioActualId),
             _ => query.Where(t => false)
         };
@@ -158,10 +164,10 @@ public class TareaService : ITareaService
         return tareaResponse;
     }
  
-    public async Task<TareaResponseDto> ReasignarTareaAsync(int tareaId, int nuevoAsignadoA, int usuarioQueReasignaId, string rolQueReasigna, int? departamentoQueReasignaId)
+    public async Task<TareaResponseDto> ReasignarTareaAsync(int tareaId, int nuevoAsignadoA, int usuarioQueReasignaId, string rolQueReasigna, List<int> departamentosQueReasignaIds)
     {
        
-    if (rolQueReasigna != "Jefe" && rolQueReasigna != "Encargado Departamento")
+           if (rolQueReasigna != "Jefe" && rolQueReasigna != "Encargado Departamento")
         throw new UnauthorizedAccessException("No tiene permisos para reasignar tareas.");
 
     var tarea = await _context.Tareas
@@ -172,19 +178,19 @@ public class TareaService : ITareaService
     if (tarea.Estado.NombreEstado == ESTADO_COMPLETADA || tarea.Estado.NombreEstado == ESTADO_CANCELADA)
         throw new Exception($"No se puede reasignar una tarea en estado '{tarea.Estado.NombreEstado}'.");
 
-    var nuevoEmpleado = await _context.Usuarios.FindAsync(nuevoAsignadoA)
+    // El Encargado solo puede reasignar tareas de departamentos donde tenga acceso
+    if (rolQueReasigna == "Encargado Departamento" && !departamentosQueReasignaIds.Contains(tarea.DepartamentoId))
+        throw new UnauthorizedAccessException("Solo puede reasignar tareas de departamentos a su cargo.");
+
+    var nuevoEmpleado = await _context.Usuarios
+        .Include(u => u.UsuariosDepartamentos)
+        .FirstOrDefaultAsync(u => u.Id == nuevoAsignadoA)
         ?? throw new Exception("El nuevo empleado a asignar no existe.");
 
-    // NUEVO: el nuevo empleado debe pertenecer al MISMO departamento que la tarea,
-    // sin importar quien reasigne (ni siquiera el Jefe puede cruzar departamentos).
-    if (nuevoEmpleado.DepartamentoId != tarea.DepartamentoId)
-        throw new Exception("No se puede reasignar la tarea a un empleado de un departamento distinto al original.");
-
-    // Esta validacion queda redundante con la de arriba para el caso de
-    // Encargado (ya que su propio departamento coincide con el de sus tareas),
-    // pero la dejamos por claridad y como capa adicional explicita.
-    if (rolQueReasigna == "Encargado Departamento" && nuevoEmpleado.DepartamentoId != departamentoQueReasignaId)
-        throw new UnauthorizedAccessException("Solo puede reasignar tareas a empleados de su propio departamento.");
+    // El nuevo empleado debe pertenecer al MISMO departamento que la tarea
+    var nuevoEmpleadoDeptosIds = nuevoEmpleado.UsuariosDepartamentos.Select(ud => ud.DepartamentoId);
+    if (!nuevoEmpleadoDeptosIds.Contains(tarea.DepartamentoId))
+        throw new Exception("No se puede reasignar la tarea a un empleado que no pertenece a ese departamento.");
 
     var empleadoAnteriorId = tarea.AsignadoA;
     var empleadoAnterior = await _context.Usuarios.FindAsync(empleadoAnteriorId);
@@ -215,7 +221,7 @@ public class TareaService : ITareaService
         var tareaResponse = await MapearTareaResponseAsync(tarea.Id);
  
         // --- Eventos en tiempo real ---
-        await _hub.Clients.User(empleadoAnteriorId.ToString())
+        await _hub.Clients.User(empleadoAnteriorId.ToString()!)
             .SendAsync("NuevaNotificacion", MapearNotificacionResponse(notificacion));
  
         await NotificarActualizacionTareaAsync(tareaResponse, tarea.DepartamentoId);
@@ -270,7 +276,7 @@ public class TareaService : ITareaService
             Estado = tarea.Estado.NombreEstado,
             Prioridad = tarea.Prioridad.NombrePrioridad,
             AsignadoA = tarea.AsignadoA,
-            AsignadoANombre = tarea.AsignadoANavigation.Nombre,
+            AsignadoANombre = tarea.AsignadoANavigation!.Nombre,
             FechaVencimiento = tarea.FechaVencimiento,
             FechaCreacion = tarea.FechaCreacion
         };

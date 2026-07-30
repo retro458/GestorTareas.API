@@ -20,9 +20,9 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto dto)
     {
-        var usuario = await _authService.ValidarCredencialesAsync(dto.Email, dto.Password);
+        var usuario = await _authService.ValidarCredencialesAsync(dto.NombreUsuario, dto.Password);
         if (usuario is null)
-            return Unauthorized(new { mensaje = "Correo o contraseña incorrectos." });
+            return Unauthorized(new { mensaje = "Usuario o contraseña incorrectos." });
 
         var token = _authService.GenerarToken(usuario);
 

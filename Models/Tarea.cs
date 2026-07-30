@@ -22,7 +22,7 @@ public partial class Tarea
 
     public int? AsignadoA { get; set; }
 
-    public int CreadoPor { get; set; }
+    public int? CreadoPor { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime? FechaCreacion { get; set; }

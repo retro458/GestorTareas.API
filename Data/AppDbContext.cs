@@ -31,6 +31,7 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
     public virtual DbSet<Notificaciones> Notificaciones { get; set; }
+    public virtual DbSet<UsuariosDepartamentos>  UsuariosDepartamentos {get;set;}
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -105,7 +106,7 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.EmailVerificacion).HasDefaultValue(false);
-
+            
             entity.HasOne(d => d.Departamento).WithMany(p => p.Usuarios).HasConstraintName("FK__Usuarios__Depart__4F7CD00D");
 
             entity.HasOne(d => d.Rol).WithMany(p => p.Usuarios).HasConstraintName("FK__Usuarios__RolID__6FE99F9F");
@@ -124,7 +125,16 @@ public partial class AppDbContext : DbContext
 
             entity.Property(e => e.FechaCreacion).HasDefaultValueSql("(getdate())");
         });
-
+        modelBuilder.Entity<UsuariosDepartamentos>(entity =>
+        {
+           entity.HasKey(e  => e.Id).HasName("PK__Usuarios__3214EC07B6B59015");
+           entity.HasOne(d => d.Usuarios ).WithMany(p => p.UsuariosDepartamentos)
+                 .HasForeignKey(d => d.UsuarioId)
+                 .HasConstraintName("FK_UsuariosDepartamentos_Usuarios");
+           entity.HasOne(d => d.Departamento).WithMany(p => p.UsuariosDepartamentos)
+                 .HasForeignKey(d => d.DepartamentoId)
+                 .HasConstraintName("FK_UsuariosDepartamentos_Departamentos");
+        });
         OnModelCreatingPartial(modelBuilder);
     }
 

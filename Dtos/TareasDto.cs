@@ -5,6 +5,7 @@ public class CrearTareaDto
     public string Titulo { get; set; } = string.Empty;
     public string? Descripcion { get; set; }
     public int AsignadoA { get; set; }
+    public int DepartamentoId {get;set;}
     public int PrioridadId { get; set; }
     public DateTime? FechaVencimiento { get; set; }
 }

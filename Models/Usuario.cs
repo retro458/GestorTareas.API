@@ -14,7 +14,8 @@ public partial class Usuario
 
     [StringLength(150)]
     public string Nombre { get; set; } = null!;
-
+    [StringLength(50)]
+    public string? NombreUsuario {get;set;}
     [StringLength(150)]
     public string Email { get; set; } = null!;
 
@@ -49,6 +50,6 @@ public partial class Usuario
 
     [InverseProperty("CreadoPorNavigation")]
     public virtual ICollection<Tarea> TareaCreadoPorNavigations { get; set; } = new List<Tarea>();
-
+    public virtual ICollection<UsuariosDepartamentos> UsuariosDepartamentos {get;set;} = new List<UsuariosDepartamentos>();
     public virtual ICollection<Notificaciones> Notificaciones { get; set; } = new List<Notificaciones>();
 }

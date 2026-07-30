@@ -28,7 +28,7 @@ public class TareasController : ControllerBase
                 dto,
                 User.ObtenerUsuarioId(),
                 User.ObtenerRol(),
-                User.ObtenerDepartamentoId());
+                User.ObtenerDepartamentosIds());
 
             return Ok(tarea);
         }
@@ -48,7 +48,7 @@ public class TareasController : ControllerBase
         var tareas = await _tareaService.ObtenerTareasAsync(
             User.ObtenerUsuarioId(),
             User.ObtenerRol(),
-            User.ObtenerDepartamentoId());
+            User.ObtenerDepartamentosIds());
 
         return Ok(tareas);
     }
@@ -87,7 +87,7 @@ public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBod
                 dto.NuevoAsignadoA,
                 User.ObtenerUsuarioId(),
                 User.ObtenerRol(),
-                User.ObtenerDepartamentoId());
+                User.ObtenerDepartamentosIds());
 
             return Ok(tarea);
         }

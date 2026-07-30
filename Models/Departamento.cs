@@ -24,4 +24,6 @@ public partial class Departamento
 
     [InverseProperty("Departamento")]
     public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+
+    public virtual ICollection<UsuariosDepartamentos> UsuariosDepartamentos {get;set;} = new List<UsuariosDepartamentos>();
 }

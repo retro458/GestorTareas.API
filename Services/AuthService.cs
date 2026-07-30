@@ -27,11 +27,11 @@ public class AuthService : IAuthService
         _jwtExpirationMinutes = int.TryParse(DotNetEnv.Env.GetString("JWT_EXPIRATION_MINUTES"), out var m) ? m : 60;
     }
 
-    public async Task<LoginResponseDto?> ValidarCredencialesAsync(string email, string password)
+    public async Task<LoginResponseDto?> ValidarCredencialesAsync(string nombreUsuario, string password)
     {
         var usuario = await _db.Usuarios
             .Include(u => u.Rol)
-            .FirstOrDefaultAsync(u => u.Email == email && u.Activo == true);
+            .FirstOrDefaultAsync(u => u.NombreUsuario == nombreUsuario && u.Activo == true);
 
         if (usuario is null)
             return null;
@@ -45,7 +45,6 @@ public class AuthService : IAuthService
         {
             Id = usuario.Id,
             Nombre = usuario.Nombre,
-            Email = usuario.Email,
             Rol = usuario.Rol!.NombreRol,
             DepartamentoId = usuario.DepartamentoId
         };
@@ -57,13 +56,14 @@ public class AuthService : IAuthService
         {
             new(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
             new(ClaimTypes.Name, usuario.Nombre),
-            new(ClaimTypes.Email, usuario.Email),
+            new("NombreUsuario", usuario.NombreUsuario),
             new(ClaimTypes.Role, usuario.Rol),
         };
 
-        if (usuario.DepartamentoId.HasValue)
-            claims.Add(new Claim("DepartamentoId", usuario.DepartamentoId.Value.ToString()));
-
+        foreach (var deptoId in usuario.DepartamentosIds!)
+        {
+            claims.Add(new Claim("DepartamentoId", deptoId.ToString()));
+        }
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

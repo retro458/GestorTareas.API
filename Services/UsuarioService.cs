@@ -20,10 +20,10 @@ public class UsuarioService : IUsuarioService
     }
 
    public async Task<UsuarioResponseDto> RegisterAsync(
-    string nombre, string email, string password, string nombreRol, string departamento,
+    string nombre, string nombreUsuario, string password, string nombreRol, string departamento,
     string rolCreador, int? departamentoCreadorId)
 {
-    var usuarioExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
+    var usuarioExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.NombreUsuario== nombreUsuario);
     if (usuarioExistente != null)
         throw new Exception("El usuario ya existe.");
 
@@ -51,25 +51,25 @@ public class UsuarioService : IUsuarioService
     if (rolCreador == "Encargado Departamento" && departamentoExistente.Id != departamentoCreadorId)
         throw new UnauthorizedAccessException("Solo puede crear usuarios dentro de su propio departamento.");
         
-    var tokenVerificacion = Guid.NewGuid().ToString(); // Genera un token de verificación único
+   // var tokenVerificacion = Guid.NewGuid().ToString(); // Genera un token de verificación único
     var nuevoUsuario = new Usuario
     {
         Nombre = nombre,
-        Email = email,
+        NombreUsuario = nombreUsuario,
         PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
         RolId = rol.RolId,
         DepartamentoId = departamentoExistente.Id,
         Activo = true,
-        EmailVerificacion = false,
-        TokenVerificacion = tokenVerificacion
+        //EmailVerificacion = false,
+        //TokenVerificacion = tokenVerificacion
     };
 
     _context.Usuarios.Add(nuevoUsuario);
     await _context.SaveChangesAsync();
-    await _emailService.EnviarCorreoVerificacionAsync(nuevoUsuario.Email, nuevoUsuario.Nombre, tokenVerificacion);
+   // await _emailService.EnviarCorreoVerificacionAsync(nuevoUsuario.Email, nuevoUsuario.Nombre, tokenVerificacion);
     return new UsuarioResponseDto
     {
-        Email = nuevoUsuario.Email,
+        NombreUsuario = nuevoUsuario.Email,
         NombreRol = rol.NombreRol,
         Departamento = departamentoExistente.Nombre,
     };
@@ -90,22 +90,24 @@ public class UsuarioService : IUsuarioService
         {
             Id = usuario.Id,
             Nombre = usuario.Nombre,
-            Email = usuario.Email,
-            NombreRol = usuario.Rol.NombreRol,
-            Departamento = usuario.Departamento.Nombre,
+            NombreUsuario = usuario.NombreUsuario,
+            NombreRol = usuario.Rol?.NombreRol,
+            Departamento = usuario.Departamento?.Nombre,
         };
     }
 
    
-public async Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosPorDepartamentoAsync(int departamentoId)
+public async Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosPorDepartamentoAsync(int departamentoId,int usuarioActualId)
 {
     // Solo empleados (no jefes ni encargados) del departamento especifico.
     // Un Encargado no deberia poder "reasignar" una tarea a otro Encargado
     // o al Jefe - solo a los empleados que el mismo supervisa.
-    var empleados = await _context.Usuarios
+     var empleados = await _context.Usuarios
         .Include(u => u.Rol)
         .Include(u => u.Departamento)
-        .Where(u => u.DepartamentoId == departamentoId && u.Rol.NombreRol == "Empleado" && u.Activo == true)
+        .Where(u => u.DepartamentoId == departamentoId
+                 && u.Activo == true
+                 && (u.Rol!.NombreRol == "Empleado" || u.Id == usuarioActualId)) // incluye al propio Encargado
         .OrderBy(u => u.Nombre)
         .ToListAsync();
  
@@ -113,8 +115,8 @@ public async Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosPorDepartamentoAs
     {
         Id = u.Id,
         Nombre = u.Nombre,
-        Email = u.Email,
-        NombreRol = u.Rol.NombreRol,
+        NombreUsuario = u.NombreUsuario,
+        NombreRol = u.Rol!.NombreRol,
         Departamento = u.Departamento?.Nombre ?? "Sin asignar"
     });
 }
@@ -126,7 +128,7 @@ public async Task<IEnumerable<UsuarioResponseDto>> GetTodosLosEmpleadosAsync()
     var empleados = await _context.Usuarios
         .Include(u => u.Rol)
         .Include(u => u.Departamento)
-        .Where(u => u.Rol.NombreRol == "Empleado" && u.Activo == true)
+        .Where(u => u.Rol!.NombreRol == "Empleado" && u.Activo == true)
         .OrderBy(u => u.Departamento!.Nombre).ThenBy(u => u.Nombre)
         .ToListAsync();
  
@@ -134,8 +136,8 @@ public async Task<IEnumerable<UsuarioResponseDto>> GetTodosLosEmpleadosAsync()
     {
         Id = u.Id,
         Nombre = u.Nombre,
-        Email = u.Email,
-        NombreRol = u.Rol.NombreRol,
+        NombreUsuario = u.NombreUsuario,
+        NombreRol = u.Rol!.NombreRol,
         Departamento = u.Departamento?.Nombre ?? "Sin asignar"
     });
    } 

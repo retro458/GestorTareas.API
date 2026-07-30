@@ -6,6 +6,7 @@ using GestorTareas.API.Extensions;
 using GestorTareas.API.Data;
 using Microsoft.EntityFrameworkCore;
 using GestorTareas.API.Models;
+using System.Security.Claims;
 namespace GestorTareas.API.Controllers;
 
 [Route("api/[controller]")]
@@ -26,7 +27,7 @@ public class UsuarioController : ControllerBase
     {
         try
         {
-            await _usuarioService.RegisterAsync(request.Nombre!, request.Email!, request.Password!, request.NombreRol!, request.Departamento!, User.ObtenerRol(), User.ObtenerDepartamentoId());
+            await _usuarioService.RegisterAsync(request.Nombre!, request.NombreUsuario!, request.Password!, request.NombreRol!, request.Departamento!, User.ObtenerRol(), User.ObtenerDepartamentosIds()?.FirstOrDefault());
             return Ok(new { message = "Usuario registrado exitosamente" });
         }
         catch (Exception ex)
@@ -39,12 +40,18 @@ public class UsuarioController : ControllerBase
 [Authorize(Roles = "Encargado Departamento")]
 public async Task<ActionResult<IEnumerable<UsuarioResponseDto>>> ObtenerEmpleadosDeMiDepartamento()
 {
-    var departamentoId = User.ObtenerDepartamentoId();
- 
-    if (!departamentoId.HasValue)
+    var departamentoIds = User.ObtenerDepartamentosIds();
+
+    if (departamentoIds == null || departamentoIds.Count == 0)
         return BadRequest(new { error = "No se pudo determinar el departamento del usuario actual." });
- 
-    var empleados = await _usuarioService.GetEmpleadosPorDepartamentoAsync(departamentoId.Value);
+
+    var departamentoId = departamentoIds[0];
+    var claimUsuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(claimUsuarioId) || !int.TryParse(claimUsuarioId, out int usuarioActualId))
+    {
+        return Unauthorized(new { error = "No se pudo identificar al usuario actual en la sesión." });
+    }
+    var empleados = await _usuarioService.GetEmpleadosPorDepartamentoAsync(departamentoId, usuarioActualId);
     return Ok(empleados);
 }
 [HttpGet("empleados/todos")]

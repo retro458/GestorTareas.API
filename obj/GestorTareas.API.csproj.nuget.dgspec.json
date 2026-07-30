@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/home/erickbaudriz/Documentos/GestorTareas/GestorTareas.API/GestorTareas.API.csproj": {}
+    "C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\GestorTareas.API.csproj": {}
   },
   "projects": {
-    "/home/erickbaudriz/Documentos/GestorTareas/GestorTareas.API/GestorTareas.API.csproj": {
+    "C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\GestorTareas.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/erickbaudriz/Documentos/GestorTareas/GestorTareas.API/GestorTareas.API.csproj",
+        "projectUniqueName": "C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\GestorTareas.API.csproj",
         "projectName": "GestorTareas.API",
-        "projectPath": "/home/erickbaudriz/Documentos/GestorTareas/GestorTareas.API/GestorTareas.API.csproj",
-        "packagesPath": "/home/erickbaudriz/.nuget/packages/",
-        "outputPath": "/home/erickbaudriz/Documentos/GestorTareas/GestorTareas.API/obj/",
+        "projectPath": "C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\GestorTareas.API.csproj",
+        "packagesPath": "C:\\Users\\danie\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/erickbaudriz/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\danie\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -104,7 +104,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/home/erickbaudriz/.dotnet/sdk/9.0.316/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.316/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
