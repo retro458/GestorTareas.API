@@ -28,6 +28,7 @@ public class TareaResponseDto
     public string Estado { get; set; } = string.Empty;
     public string Prioridad { get; set; } = string.Empty;
     public int? AsignadoA { get; set; }
+    public int? DepartamentoId {get;set;}
     public string AsignadoANombre { get; set; } = string.Empty;
     public DateTime? FechaVencimiento { get; set; }
     public DateTime? FechaCreacion { get; set; }

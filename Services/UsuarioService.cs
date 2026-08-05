@@ -19,11 +19,11 @@ public class UsuarioService : IUsuarioService
         _emailService = emailService;
     }
 
-   public async Task<UsuarioResponseDto> RegisterAsync(
-    string nombre, string nombreUsuario, string password, string nombreRol, string departamento,
-    string rolCreador, int? departamentoCreadorId)
+  public async Task<UsuarioResponseDto> RegisterAsync(
+    string nombre, string nombreUsuario, string password, string nombreRol, List<int> departamentosIds,
+    string rolCreador, List<int> departamentosCreadorIds)
 {
-    var usuarioExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.NombreUsuario== nombreUsuario);
+    var usuarioExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.NombreUsuario == nombreUsuario);
     if (usuarioExistente != null)
         throw new Exception("El usuario ya existe.");
 
@@ -38,47 +38,71 @@ public class UsuarioService : IUsuarioService
             throw new Exception("Ya hay un jefe registrado, no se puede registrar otro jefe.");
     }
 
-    // NUEVO: un Encargado solo puede estar creando usuarios de su propio rol/alcance
     if (rolCreador != "Jefe" && rolCreador != "Encargado Departamento")
         throw new UnauthorizedAccessException("No tiene permisos para crear usuarios.");
 
-    var departamentoExistente = await _context.Departamentos.FirstOrDefaultAsync(d => d.Nombre == departamento);
-    if (departamentoExistente == null)
-        throw new Exception("El departamento especificado no existe.");
+    if (!departamentosIds.Any())
+        throw new Exception("El usuario debe pertenecer al menos a un departamento.");
 
-    // NUEVO: el Encargado solo puede crear usuarios en su propio departamento,
-    // sin importar que departamento haya intentado mandar el frontend.
-    if (rolCreador == "Encargado Departamento" && departamentoExistente.Id != departamentoCreadorId)
-        throw new UnauthorizedAccessException("Solo puede crear usuarios dentro de su propio departamento.");
-        
-   // var tokenVerificacion = Guid.NewGuid().ToString(); // Genera un token de verificación único
+    // Verifica que todos los departamentos solicitados existan realmente
+    var departamentosValidos = await _context.Departamentos
+        .Where(d => departamentosIds.Contains(d.Id))
+        .Select(d => d.Id)
+        .ToListAsync();
+
+    if (departamentosValidos.Count != departamentosIds.Distinct().Count())
+        throw new Exception("Uno o más departamentos especificados no existen.");
+
+    // El Encargado solo puede asignar departamentos a los que el mismo pertenece
+    if (rolCreador == "Encargado Departamento" && departamentosIds.Any(d => !departamentosCreadorIds.Contains(d)))
+        throw new UnauthorizedAccessException("Solo puede asignar departamentos a los que usted mismo pertenece.");
+
     var nuevoUsuario = new Usuario
     {
         Nombre = nombre,
         NombreUsuario = nombreUsuario,
         PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
         RolId = rol.RolId,
-        DepartamentoId = departamentoExistente.Id,
-        Activo = true,
-        //EmailVerificacion = false,
-        //TokenVerificacion = tokenVerificacion
+        Activo = true
     };
 
     _context.Usuarios.Add(nuevoUsuario);
-    await _context.SaveChangesAsync();
-   // await _emailService.EnviarCorreoVerificacionAsync(nuevoUsuario.Email, nuevoUsuario.Nombre, tokenVerificacion);
-    return new UsuarioResponseDto
+    await _context.SaveChangesAsync(); // necesitamos el Id generado antes de poblar la tabla intermedia
+
+    foreach (var deptoId in departamentosIds)
     {
-        NombreUsuario = nuevoUsuario.Email,
-        NombreRol = rol.NombreRol,
-        Departamento = departamentoExistente.Nombre,
-    };
+        _context.UsuariosDepartamentos.Add(new UsuariosDepartamentos
+        {
+            UsuarioId = nuevoUsuario.Id,
+            DepartamentoId = deptoId
+        });
+    }
+    await _context.SaveChangesAsync();
+
+    var nombresDepartamentos = await _context.Departamentos
+        .Where(d => departamentosIds.Contains(d.Id))
+        .Select(d => d.Nombre)
+        .ToListAsync();
+
+    var departamentosInfo = await _context.Departamentos
+    .Where(d => departamentosIds.Contains(d.Id))
+    .Select(d => new DepartamentoResumenDto { Id = d.Id, Nombre = d.Nombre })
+    .ToListAsync();
+return new UsuarioResponseDto
+{
+    Id = nuevoUsuario.Id,
+    Nombre = nuevoUsuario.Nombre,
+    NombreUsuario = nuevoUsuario.NombreUsuario,
+    NombreRol = rol.NombreRol,
+    Departamentos = departamentosInfo
+};
 }
     public async Task<UsuarioResponseDto> GetUsuarioByIdAsync(int id)
     {
         var usuario = await _context.Usuarios
             .Include(u => u.Rol)
-            .Include(u => u.Departamento)
+            .Include(u => u.UsuariosDepartamentos)
+                .ThenInclude(ud => ud.Departamento)
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (usuario == null)
@@ -92,20 +116,25 @@ public class UsuarioService : IUsuarioService
             Nombre = usuario.Nombre,
             NombreUsuario = usuario.NombreUsuario,
             NombreRol = usuario.Rol?.NombreRol,
-            Departamento = usuario.Departamento?.Nombre,
+            Departamentos = usuario.UsuariosDepartamentos.Select(ud => new DepartamentoResumenDto
+            {
+                Id = ud.DepartamentoId,
+                Nombre = ud.Departamento!.Nombre
+            }).ToList()
         };
     }
 
    
-public async Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosPorDepartamentoAsync(int departamentoId,int usuarioActualId)
+public async Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosPorDepartamentoAsync(List<int> departamentosIds,int usuarioActualId)
 {
     // Solo empleados (no jefes ni encargados) del departamento especifico.
     // Un Encargado no deberia poder "reasignar" una tarea a otro Encargado
     // o al Jefe - solo a los empleados que el mismo supervisa.
      var empleados = await _context.Usuarios
         .Include(u => u.Rol)
-        .Include(u => u.Departamento)
-        .Where(u => u.DepartamentoId == departamentoId
+        .Include(u => u.UsuariosDepartamentos)
+            .ThenInclude(ud => ud.Departamento)
+        .Where(u => u.UsuariosDepartamentos.Any(ud => departamentosIds.Contains(ud.DepartamentoId))
                  && u.Activo == true
                  && (u.Rol!.NombreRol == "Empleado" || u.Id == usuarioActualId)) // incluye al propio Encargado
         .OrderBy(u => u.Nombre)
@@ -117,7 +146,9 @@ public async Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosPorDepartamentoAs
         Nombre = u.Nombre,
         NombreUsuario = u.NombreUsuario,
         NombreRol = u.Rol!.NombreRol,
-        Departamento = u.Departamento?.Nombre ?? "Sin asignar"
+        Departamentos = u.UsuariosDepartamentos
+                .Select(ud => new DepartamentoResumenDto { Id = ud.DepartamentoId, Nombre = ud.Departamento!.Nombre })
+                .ToList()
     });
 }
  
@@ -127,9 +158,10 @@ public async Task<IEnumerable<UsuarioResponseDto>> GetTodosLosEmpleadosAsync()
     // departamento, asi que aqui no filtramos por DepartamentoId.
     var empleados = await _context.Usuarios
         .Include(u => u.Rol)
-        .Include(u => u.Departamento)
+        .Include(u => u.UsuariosDepartamentos)
+            .ThenInclude(ud => ud.Departamento)
         .Where(u => u.Rol!.NombreRol == "Empleado" && u.Activo == true)
-        .OrderBy(u => u.Departamento!.Nombre).ThenBy(u => u.Nombre)
+        .OrderBy(u => u.UsuariosDepartamentos.First().Departamento!.Nombre).ThenBy(u => u.Nombre)
         .ToListAsync();
  
     return empleados.Select(u => new UsuarioResponseDto
@@ -138,7 +170,9 @@ public async Task<IEnumerable<UsuarioResponseDto>> GetTodosLosEmpleadosAsync()
         Nombre = u.Nombre,
         NombreUsuario = u.NombreUsuario,
         NombreRol = u.Rol!.NombreRol,
-        Departamento = u.Departamento?.Nombre ?? "Sin asignar"
+        Departamentos = u.UsuariosDepartamentos
+                .Select(ud => new DepartamentoResumenDto { Id = ud.DepartamentoId, Nombre = ud.Departamento!.Nombre })
+                .ToList()
     });
    } 
 }

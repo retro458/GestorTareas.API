@@ -105,9 +105,9 @@ public partial class AppDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Usuarios__3214EC070CAAE474");
 
             entity.Property(e => e.Activo).HasDefaultValue(true);
-            entity.Property(e => e.EmailVerificacion).HasDefaultValue(false);
+            //entity.Property(e => e.EmailVerificacion).HasDefaultValue(false);
             
-            entity.HasOne(d => d.Departamento).WithMany(p => p.Usuarios).HasConstraintName("FK__Usuarios__Depart__4F7CD00D");
+            //entity.HasOne(d => d.Departamento).WithMany(p => p.Usuarios).HasConstraintName("FK__Usuarios__Depart__4F7CD00D");
 
             entity.HasOne(d => d.Rol).WithMany(p => p.Usuarios).HasConstraintName("FK__Usuarios__RolID__6FE99F9F");
         });

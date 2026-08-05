@@ -1,0 +1,29 @@
+{
+  "Files": [
+    {
+      "Id": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/wwwroot/test-signalr.html",
+      "PackagePath": "staticwebassets/test-signalr.html"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.GestorTareas.API.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.GestorTareas.API.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.build.GestorTareas.API.props",
+      "PackagePath": "build\\GestorTareas.API.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.buildMultiTargeting.GestorTareas.API.props",
+      "PackagePath": "buildMultiTargeting\\GestorTareas.API.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.buildTransitive.GestorTareas.API.props",
+      "PackagePath": "buildTransitive\\GestorTareas.API.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

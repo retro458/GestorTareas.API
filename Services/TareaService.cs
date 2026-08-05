@@ -57,7 +57,7 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
             Descripcion = dto.Descripcion,
             EstadoId = estadoInicial.EstadoId,
             PrioridadId = dto.PrioridadId,
-            DepartamentoId = empleado.DepartamentoId,
+            DepartamentoId = dto.DepartamentoId,
             AsignadoA = dto.AsignadoA,
             CreadoPor = creadoPorId,
             FechaCreacion = DateTime.UtcNow,
@@ -93,7 +93,7 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
         await _hub.Clients.User(dto.AsignadoA.ToString())
             .SendAsync("NuevaNotificacion", MapearNotificacionResponse(notificacion));
  
-        await NotificarActualizacionTareaAsync(tareaResponse, empleado.DepartamentoId);
+        await NotificarActualizacionTareaAsync(tareaResponse, dto.DepartamentoId);
  
         return tareaResponse;
     }
@@ -157,10 +157,17 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
         await _context.SaveChangesAsync();
  
         var tareaResponse = await MapearTareaResponseAsync(tarea.Id);
+        var estadosQueNotifican = new[] {"En Progreso", "Completada"};
  
         // --- Evento en tiempo real: el jefe/encargado ve el cambio sin recargar ---
         await NotificarActualizacionTareaAsync(tareaResponse, tarea.DepartamentoId);
- 
+        
+        if(estadosQueNotifican.Contains(nuevoEstado.NombreEstado))
+        {
+            var empleado = await _context.Usuarios.FindAsync(usuarioActualId);
+            await NotificarCambioEstadoRelevanteAsync(tarea, empleado?.Nombre ?? "Un Empleado", nuevoEstado.NombreEstado);
+            
+        }
         return tareaResponse;
     }
  
@@ -178,10 +185,12 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
     if (tarea.Estado.NombreEstado == ESTADO_COMPLETADA || tarea.Estado.NombreEstado == ESTADO_CANCELADA)
         throw new Exception($"No se puede reasignar una tarea en estado '{tarea.Estado.NombreEstado}'.");
 
-    // El Encargado solo puede reasignar tareas de departamentos donde tenga acceso
-    if (rolQueReasigna == "Encargado Departamento" && !departamentosQueReasignaIds.Contains(tarea.DepartamentoId))
-        throw new UnauthorizedAccessException("Solo puede reasignar tareas de departamentos a su cargo.");
+var tareaDepartamentoId = tarea.DepartamentoId
+    ?? throw new Exception("La tarea no tiene un departamento asignado (estado de datos inconsistente).");
 
+    // El Encargado solo puede reasignar tareas de departamentos donde tenga acceso
+if (rolQueReasigna == "Encargado Departamento" && !departamentosQueReasignaIds.Contains(tareaDepartamentoId))
+    throw new UnauthorizedAccessException("Solo puede reasignar tareas de departamentos a su cargo.");
     var nuevoEmpleado = await _context.Usuarios
         .Include(u => u.UsuariosDepartamentos)
         .FirstOrDefaultAsync(u => u.Id == nuevoAsignadoA)
@@ -189,9 +198,9 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
 
     // El nuevo empleado debe pertenecer al MISMO departamento que la tarea
     var nuevoEmpleadoDeptosIds = nuevoEmpleado.UsuariosDepartamentos.Select(ud => ud.DepartamentoId);
-    if (!nuevoEmpleadoDeptosIds.Contains(tarea.DepartamentoId))
-        throw new Exception("No se puede reasignar la tarea a un empleado que no pertenece a ese departamento.");
-
+if (!nuevoEmpleadoDeptosIds.Contains(tareaDepartamentoId))
+    throw new Exception("No se puede reasignar la tarea a un empleado que no pertenece a ese departamento.");
+    
     var empleadoAnteriorId = tarea.AsignadoA;
     var empleadoAnterior = await _context.Usuarios.FindAsync(empleadoAnteriorId);
 
@@ -228,6 +237,20 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
  
         return tareaResponse;
     }
+
+    // sirve para filtrar las tareas por departamento en el dashboard de jefes y encargados
+    public async Task<IEnumerable<TareaResponseDto>> ObtenerTareasPorDepartamentoAsync(int departamentoId)
+{
+    var tareas = await _context.Tareas
+        .Include(t => t.Estado)
+        .Include(t => t.Prioridad)
+        .Include(t => t.AsignadoANavigation)
+        .Where(t => t.DepartamentoId == departamentoId)
+        .OrderByDescending(t => t.FechaCreacion)
+        .ToListAsync();
+
+    return tareas.Select(MapearTareaResponse);
+}
  
     /// Envia el evento "TareaActualizada" al grupo de Jefes (siempre) y al
     /// grupo del departamento correspondiente (si aplica), para que el
@@ -240,6 +263,44 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
         {
             await _hub.Clients.Group($"departamento-{departamentoId.Value}")
                 .SendAsync("TareaActualizada", tarea);
+        }
+    }
+
+    private async Task NotificarCambioEstadoRelevanteAsync(Tarea tarea,string nombreEmpleado, string NombreEstado)
+   {
+        var mensaje = $"{nombreEmpleado} cambio el estado de '{tarea.Titulo}' a '{NombreEstado}'.";
+
+        // esto me permite ver a todos jefes(aunque al fina solo sea uno, pero anyway) mas el encargado de la tarea
+        var destinatarios = await _context.Usuarios
+            .Where(u => u.Rol!.NombreRol == "Jefe"
+                   || (u.Rol!.NombreRol == "Encargado Departamento" 
+                    && u.UsuariosDepartamentos.Any(ud => ud.DepartamentoId == tarea.DepartamentoId)))
+            .Select(u => u.Id)
+            .ToListAsync();
+        
+        foreach (var destinatariId in destinatarios)
+        {
+            var Notificaciones = new Notificaciones
+            {
+                UsuarioId = destinatariId,
+                TareaId = tarea.Id,
+                Mensaje = mensaje,
+                Leida = false,
+                FechaCreacion = DateTime.UtcNow
+            };
+            _context.Notificaciones.Add(Notificaciones);
+        }
+        await _context.SaveChangesAsync();
+
+        //permite emitir a cada uno mientras esta conectado 
+        foreach (var destinatariId in destinatarios)
+        {
+            var notiParaEnviar = await _context.Notificaciones
+                .Where(n => n.UsuarioId == destinatariId && n.TareaId == tarea.Id)
+                .OrderByDescending(n => n.FechaCreacion)
+                .FirstAsync();
+            await _hub.Clients.User(destinatariId.ToString())
+                .SendAsync("NuevaNotificacion", MapearNotificacionResponse(notiParaEnviar));
         }
     }
  
@@ -275,6 +336,7 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
             Descripcion = tarea.Descripcion,
             Estado = tarea.Estado.NombreEstado,
             Prioridad = tarea.Prioridad.NombrePrioridad,
+            DepartamentoId = tarea.DepartamentoId,
             AsignadoA = tarea.AsignadoA,
             AsignadoANombre = tarea.AsignadoANavigation!.Nombre,
             FechaVencimiento = tarea.FechaVencimiento,

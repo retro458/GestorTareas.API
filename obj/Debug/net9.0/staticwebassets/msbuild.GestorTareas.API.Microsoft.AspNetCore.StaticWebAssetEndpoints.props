@@ -1,0 +1,16 @@
+﻿<Project>
+  <ItemGroup>
+    <StaticWebAssetEndpoint Include="_content/GestorTareas.API/test-signalr.c3r7xi0m6c.html">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\test-signalr.html'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"c3r7xi0m6c"},{"Name":"integrity","Value":"sha256-GLI9l02VOBfFoEgMNCS\u002BFRkqUy\u002BHJpb\u002BCZmdRZTmru4="},{"Name":"label","Value":"_content/GestorTareas.API/test-signalr.html"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2324"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u0022GLI9l02VOBfFoEgMNCS\u002BFRkqUy\u002BHJpb\u002BCZmdRZTmru4=\u0022"},{"Name":"Last-Modified","Value":"Sat, 01 Aug 2026 05:35:40 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/GestorTareas.API/test-signalr.html">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\test-signalr.html'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-GLI9l02VOBfFoEgMNCS\u002BFRkqUy\u002BHJpb\u002BCZmdRZTmru4="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"2324"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u0022GLI9l02VOBfFoEgMNCS\u002BFRkqUy\u002BHJpb\u002BCZmdRZTmru4=\u0022"},{"Name":"Last-Modified","Value":"Sat, 01 Aug 2026 05:35:40 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+  </ItemGroup>
+</Project>

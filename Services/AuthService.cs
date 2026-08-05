@@ -31,6 +31,7 @@ public class AuthService : IAuthService
     {
         var usuario = await _db.Usuarios
             .Include(u => u.Rol)
+            .Include(u => u.UsuariosDepartamentos)
             .FirstOrDefaultAsync(u => u.NombreUsuario == nombreUsuario && u.Activo == true);
 
         if (usuario is null)
@@ -45,8 +46,9 @@ public class AuthService : IAuthService
         {
             Id = usuario.Id,
             Nombre = usuario.Nombre,
+            NombreUsuario = usuario.NombreUsuario ?? throw new Exception("Nombre de usuario no puede ser nulo"),
             Rol = usuario.Rol!.NombreRol,
-            DepartamentoId = usuario.DepartamentoId
+            DepartamentosIds = usuario.UsuariosDepartamentos.Select(ud => ud.DepartamentoId).ToList()
         };
     }
 

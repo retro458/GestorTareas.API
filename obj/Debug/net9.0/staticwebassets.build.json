@@ -1,1 +1,362 @@
-{"Version":1,"Hash":"sCRrp+BllgQsfHOl3sG5h5MEUtrhm6xkzOklETg2MX0=","Source":"GestorTareas.API","BasePath":"_content/GestorTareas.API","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[{"Name":"GestorTareas.API\\wwwroot","Source":"GestorTareas.API","ContentRoot":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\wwwroot\\","BasePath":"_content/GestorTareas.API","Pattern":"**"}],"Assets":[{"Identity":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\obj\\Debug\\net9.0\\compressed\\tthu8sgoc7-eg6mekd156.gz","SourceId":"GestorTareas.API","SourceType":"Discovered","ContentRoot":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\obj\\Debug\\net9.0\\compressed\\","BasePath":"_content/GestorTareas.API","RelativePath":"test-signalr#[.{fingerprint=eg6mekd156}]?.html.gz","AssetKind":"All","AssetMode":"All","AssetRole":"Alternative","AssetMergeBehavior":"","AssetMergeSource":"","RelatedAsset":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\wwwroot\\test-signalr.html","AssetTraitName":"Content-Encoding","AssetTraitValue":"gzip","Fingerprint":"kjdkt1t13b","Integrity":"kHJCrUpjNbMqH4qw+AlemTEzqF3UAhVT8Pvz6nLzjpU=","CopyToOutputDirectory":"Never","CopyToPublishDirectory":"PreserveNewest","OriginalItemSpec":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\wwwroot\\test-signalr.html","FileLength":992,"LastWriteTime":"2026-07-28T21:51:29+00:00"},{"Identity":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\wwwroot\\test-signalr.html","SourceId":"GestorTareas.API","SourceType":"Discovered","ContentRoot":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\wwwroot\\","BasePath":"_content/GestorTareas.API","RelativePath":"test-signalr#[.{fingerprint}]?.html","AssetKind":"All","AssetMode":"All","AssetRole":"Primary","AssetMergeBehavior":"","AssetMergeSource":"","RelatedAsset":"","AssetTraitName":"","AssetTraitValue":"","Fingerprint":"eg6mekd156","Integrity":"LngabspPCkF8Rg0ksk30x6ocG1NRzu5M2C6IO8LvUJ8=","CopyToOutputDirectory":"Never","CopyToPublishDirectory":"PreserveNewest","OriginalItemSpec":"wwwroot\\test-signalr.html","FileLength":2388,"LastWriteTime":"2026-07-28T21:36:52+00:00"}],"Endpoints":[{"Route":"test-signalr.eg6mekd156.html","AssetFile":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\obj\\Debug\\net9.0\\compressed\\tthu8sgoc7-eg6mekd156.gz","Selectors":[{"Name":"Content-Encoding","Value":"gzip","Quality":"0.001007049345"}],"ResponseHeaders":[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"992"},{"Name":"ETag","Value":"\"kHJCrUpjNbMqH4qw+AlemTEzqF3UAhVT8Pvz6nLzjpU=\""},{"Name":"Last-Modified","Value":"Tue, 28 Jul 2026 21:51:29 GMT"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Encoding","Value":"gzip"},{"Name":"Vary","Value":"Content-Encoding"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"W/\"LngabspPCkF8Rg0ksk30x6ocG1NRzu5M2C6IO8LvUJ8=\""}],"EndpointProperties":[{"Name":"fingerprint","Value":"eg6mekd156"},{"Name":"label","Value":"test-signalr.html"},{"Name":"integrity","Value":"sha256-LngabspPCkF8Rg0ksk30x6ocG1NRzu5M2C6IO8LvUJ8="}]},{"Route":"test-signalr.eg6mekd156.html","AssetFile":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\wwwroot\\test-signalr.html","Selectors":[],"ResponseHeaders":[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"2388"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\"LngabspPCkF8Rg0ksk30x6ocG1NRzu5M2C6IO8LvUJ8=\""},{"Name":"Last-Modified","Value":"Tue, 28 Jul 2026 21:36:52 GMT"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"}],"EndpointProperties":[{"Name":"fingerprint","Value":"eg6mekd156"},{"Name":"label","Value":"test-signalr.html"},{"Name":"integrity","Value":"sha256-LngabspPCkF8Rg0ksk30x6ocG1NRzu5M2C6IO8LvUJ8="}]},{"Route":"test-signalr.eg6mekd156.html.gz","AssetFile":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\obj\\Debug\\net9.0\\compressed\\tthu8sgoc7-eg6mekd156.gz","Selectors":[],"ResponseHeaders":[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"992"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\"kHJCrUpjNbMqH4qw+AlemTEzqF3UAhVT8Pvz6nLzjpU=\""},{"Name":"Last-Modified","Value":"Tue, 28 Jul 2026 21:51:29 GMT"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Encoding","Value":"gzip"},{"Name":"Vary","Value":"Content-Encoding"}],"EndpointProperties":[{"Name":"fingerprint","Value":"eg6mekd156"},{"Name":"label","Value":"test-signalr.html.gz"},{"Name":"integrity","Value":"sha256-kHJCrUpjNbMqH4qw+AlemTEzqF3UAhVT8Pvz6nLzjpU="}]},{"Route":"test-signalr.html","AssetFile":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\obj\\Debug\\net9.0\\compressed\\tthu8sgoc7-eg6mekd156.gz","Selectors":[{"Name":"Content-Encoding","Value":"gzip","Quality":"0.001007049345"}],"ResponseHeaders":[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"992"},{"Name":"ETag","Value":"\"kHJCrUpjNbMqH4qw+AlemTEzqF3UAhVT8Pvz6nLzjpU=\""},{"Name":"Last-Modified","Value":"Tue, 28 Jul 2026 21:51:29 GMT"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Encoding","Value":"gzip"},{"Name":"Vary","Value":"Content-Encoding"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"W/\"LngabspPCkF8Rg0ksk30x6ocG1NRzu5M2C6IO8LvUJ8=\""}],"EndpointProperties":[{"Name":"integrity","Value":"sha256-LngabspPCkF8Rg0ksk30x6ocG1NRzu5M2C6IO8LvUJ8="}]},{"Route":"test-signalr.html","AssetFile":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\wwwroot\\test-signalr.html","Selectors":[],"ResponseHeaders":[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"2388"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\"LngabspPCkF8Rg0ksk30x6ocG1NRzu5M2C6IO8LvUJ8=\""},{"Name":"Last-Modified","Value":"Tue, 28 Jul 2026 21:36:52 GMT"},{"Name":"Cache-Control","Value":"no-cache"}],"EndpointProperties":[{"Name":"integrity","Value":"sha256-LngabspPCkF8Rg0ksk30x6ocG1NRzu5M2C6IO8LvUJ8="}]},{"Route":"test-signalr.html.gz","AssetFile":"C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\obj\\Debug\\net9.0\\compressed\\tthu8sgoc7-eg6mekd156.gz","Selectors":[],"ResponseHeaders":[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"992"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\"kHJCrUpjNbMqH4qw+AlemTEzqF3UAhVT8Pvz6nLzjpU=\""},{"Name":"Last-Modified","Value":"Tue, 28 Jul 2026 21:51:29 GMT"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Encoding","Value":"gzip"},{"Name":"Vary","Value":"Content-Encoding"}],"EndpointProperties":[{"Name":"integrity","Value":"sha256-kHJCrUpjNbMqH4qw+AlemTEzqF3UAhVT8Pvz6nLzjpU="}]}]}
+{
+  "Version": 1,
+  "Hash": "uUmQgJSIqcbUCFshpg4aWxTkytQAx9/Zzh5tNBHJeO8=",
+  "Source": "GestorTareas.API",
+  "BasePath": "_content/GestorTareas.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "GestorTareas.API/wwwroot",
+      "Source": "GestorTareas.API",
+      "ContentRoot": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/wwwroot/",
+      "BasePath": "_content/GestorTareas.API",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/obj/Debug/net9.0/compressed/tthu8sgoc7-c3r7xi0m6c.gz",
+      "SourceId": "GestorTareas.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/obj/Debug/net9.0/compressed/",
+      "BasePath": "_content/GestorTareas.API",
+      "RelativePath": "test-signalr#[.{fingerprint=c3r7xi0m6c}]?.html.gz",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/wwwroot/test-signalr.html",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "duov0d3ga0",
+      "Integrity": "e+zzHqKKTc7AVkvJeu0ZJVim439OkAFTS3y3CYlyNRI=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/wwwroot/test-signalr.html"
+    },
+    {
+      "Identity": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/wwwroot/test-signalr.html",
+      "SourceId": "GestorTareas.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/wwwroot/",
+      "BasePath": "_content/GestorTareas.API",
+      "RelativePath": "test-signalr#[.{fingerprint}]?.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "c3r7xi0m6c",
+      "Integrity": "GLI9l02VOBfFoEgMNCS+FRkqUy+HJpb+CZmdRZTmru4=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/test-signalr.html"
+    }
+  ],
+  "Endpoints": [
+    {
+      "Route": "test-signalr.c3r7xi0m6c.html",
+      "AssetFile": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/obj/Debug/net9.0/compressed/tthu8sgoc7-c3r7xi0m6c.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.001011122346"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "988"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"e+zzHqKKTc7AVkvJeu0ZJVim439OkAFTS3y3CYlyNRI=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 01 Aug 2026 05:35:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"GLI9l02VOBfFoEgMNCS+FRkqUy+HJpb+CZmdRZTmru4=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "c3r7xi0m6c"
+        },
+        {
+          "Name": "label",
+          "Value": "test-signalr.html"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-GLI9l02VOBfFoEgMNCS+FRkqUy+HJpb+CZmdRZTmru4="
+        }
+      ]
+    },
+    {
+      "Route": "test-signalr.c3r7xi0m6c.html",
+      "AssetFile": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/wwwroot/test-signalr.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "2324"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"GLI9l02VOBfFoEgMNCS+FRkqUy+HJpb+CZmdRZTmru4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 01 Aug 2026 05:35:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "c3r7xi0m6c"
+        },
+        {
+          "Name": "label",
+          "Value": "test-signalr.html"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-GLI9l02VOBfFoEgMNCS+FRkqUy+HJpb+CZmdRZTmru4="
+        }
+      ]
+    },
+    {
+      "Route": "test-signalr.c3r7xi0m6c.html.gz",
+      "AssetFile": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/obj/Debug/net9.0/compressed/tthu8sgoc7-c3r7xi0m6c.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "988"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"e+zzHqKKTc7AVkvJeu0ZJVim439OkAFTS3y3CYlyNRI=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 01 Aug 2026 05:35:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "c3r7xi0m6c"
+        },
+        {
+          "Name": "label",
+          "Value": "test-signalr.html.gz"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-e+zzHqKKTc7AVkvJeu0ZJVim439OkAFTS3y3CYlyNRI="
+        }
+      ]
+    },
+    {
+      "Route": "test-signalr.html",
+      "AssetFile": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/obj/Debug/net9.0/compressed/tthu8sgoc7-c3r7xi0m6c.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.001011122346"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "988"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"e+zzHqKKTc7AVkvJeu0ZJVim439OkAFTS3y3CYlyNRI=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 01 Aug 2026 05:35:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"GLI9l02VOBfFoEgMNCS+FRkqUy+HJpb+CZmdRZTmru4=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-GLI9l02VOBfFoEgMNCS+FRkqUy+HJpb+CZmdRZTmru4="
+        }
+      ]
+    },
+    {
+      "Route": "test-signalr.html",
+      "AssetFile": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/wwwroot/test-signalr.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "2324"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"GLI9l02VOBfFoEgMNCS+FRkqUy+HJpb+CZmdRZTmru4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 01 Aug 2026 05:35:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-GLI9l02VOBfFoEgMNCS+FRkqUy+HJpb+CZmdRZTmru4="
+        }
+      ]
+    },
+    {
+      "Route": "test-signalr.html.gz",
+      "AssetFile": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/obj/Debug/net9.0/compressed/tthu8sgoc7-c3r7xi0m6c.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "988"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"e+zzHqKKTc7AVkvJeu0ZJVim439OkAFTS3y3CYlyNRI=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 01 Aug 2026 05:35:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-e+zzHqKKTc7AVkvJeu0ZJVim439OkAFTS3y3CYlyNRI="
+        }
+      ]
+    }
+  ]
+}

@@ -27,8 +27,10 @@ public class UsuarioController : ControllerBase
     {
         try
         {
-            await _usuarioService.RegisterAsync(request.Nombre!, request.NombreUsuario!, request.Password!, request.NombreRol!, request.Departamento!, User.ObtenerRol(), User.ObtenerDepartamentosIds()?.FirstOrDefault());
-            return Ok(new { message = "Usuario registrado exitosamente" });
+            var usuario = await _usuarioService.RegisterAsync(
+                request.Nombre!, request.NombreUsuario!, request.Password!, request.NombreRol!, request.DepartamentosIds,
+                User.ObtenerRol(), User.ObtenerDepartamentosIds());
+            return Ok(usuario);
         }
         catch (Exception ex)
         {
@@ -40,18 +42,18 @@ public class UsuarioController : ControllerBase
 [Authorize(Roles = "Encargado Departamento")]
 public async Task<ActionResult<IEnumerable<UsuarioResponseDto>>> ObtenerEmpleadosDeMiDepartamento()
 {
-    var departamentoIds = User.ObtenerDepartamentosIds();
+    var departamentosIds = User.ObtenerDepartamentosIds();
 
-    if (departamentoIds == null || departamentoIds.Count == 0)
+    if (departamentosIds == null || departamentosIds.Count == 0)
         return BadRequest(new { error = "No se pudo determinar el departamento del usuario actual." });
 
-    var departamentoId = departamentoIds[0];
+    
     var claimUsuarioId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     if (string.IsNullOrEmpty(claimUsuarioId) || !int.TryParse(claimUsuarioId, out int usuarioActualId))
     {
         return Unauthorized(new { error = "No se pudo identificar al usuario actual en la sesión." });
     }
-    var empleados = await _usuarioService.GetEmpleadosPorDepartamentoAsync(departamentoId, usuarioActualId);
+    var empleados = await _usuarioService.GetEmpleadosPorDepartamentoAsync(departamentosIds, usuarioActualId);
     return Ok(empleados);
 }
 [HttpGet("empleados/todos")]
@@ -60,9 +62,9 @@ public async Task<ActionResult<IEnumerable<UsuarioResponseDto>>> ObtenerTodosLos
 {
     var empleados = await _usuarioService.GetTodosLosEmpleadosAsync();
     return Ok(empleados);
+ }
 }
-
-[HttpGet("verificar-cuenta")]
+/*[HttpGet("verificar-cuenta")]
 public async Task<IActionResult> VerificarCuenta([FromQuery] string token)
 {
     var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.TokenVerificacion == token);
@@ -70,9 +72,8 @@ public async Task<IActionResult> VerificarCuenta([FromQuery] string token)
         return BadRequest(new { error = "Token de verificación inválido o ya utilizado." });
 
     usuario.EmailVerificacion = true;
-    usuario.TokenVerificacion = null;
+    usuario.TokenVerificacion = null!;
     await _context.SaveChangesAsync();
 
     return Ok(new { mensaje = "Cuenta verificada correctamente. Ya puedes iniciar sesión." });
-}
-}
+}*/

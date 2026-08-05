@@ -7,20 +7,23 @@ namespace GestorTareas.API.Hubs;
 [Authorize]
 public class TareasHub : Hub
 {
-    public override async Task OnConnectedAsync()
+   public override async Task OnConnectedAsync()
+{
+    var rol = Context.User!.ObtenerRol();
+    var departamentosIds = Context.User!.ObtenerDepartamentosIds();
+
+    if (rol == "Jefe")
     {
-        var rol = Context.User!.ObtenerRol();
-        var departamentoId = Context.User!.ObtenerDepartamentoId();
-
-        if (rol == "Jefe")
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, "jefes");
-        }
-        else if (rol == "Encargado Departamento" && departamentoId.HasValue)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"departamento-{departamentoId.Value}");
-        }
-
-        await base.OnConnectedAsync();
+        await Groups.AddToGroupAsync(Context.ConnectionId, "jefes");
     }
+    else if (rol == "Encargado Departamento")
+    {
+        foreach (var deptoId in departamentosIds)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"departamento-{deptoId}");
+        }
+    }
+
+    await base.OnConnectedAsync();
+}
 }

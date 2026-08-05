@@ -1,25 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\GestorTareas.API.csproj": {}
+    "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/GestorTareas.API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\GestorTareas.API.csproj": {
+    "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/GestorTareas.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\GestorTareas.API.csproj",
+        "projectUniqueName": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/GestorTareas.API.csproj",
         "projectName": "GestorTareas.API",
-        "projectPath": "C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\GestorTareas.API.csproj",
-        "packagesPath": "C:\\Users\\danie\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\danie\\Documents\\Sistema\\GestorTareas.API\\obj\\",
+        "projectPath": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/GestorTareas.API.csproj",
+        "packagesPath": "/home/erickbaudriz/.nuget/packages/",
+        "outputPath": "/home/erickbaudriz/Documents/Sistema/GestorTareas.API/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\danie\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/home/erickbaudriz/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "/usr/lib64/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -38,7 +39,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -104,7 +105,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.316/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/lib64/dotnet/sdk/9.0.119/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

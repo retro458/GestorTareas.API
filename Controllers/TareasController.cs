@@ -34,7 +34,7 @@ public class TareasController : ControllerBase
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Forbid(ex.Message);
+            return StatusCode(403, new { error = ex.Message });
         }
         catch (Exception ex)
         {
@@ -42,16 +42,24 @@ public class TareasController : ControllerBase
         }
     }
 
-    [HttpGet("obtener")]
-    public async Task<ActionResult<IEnumerable<TareaResponseDto>>> ObtenerTareas()
-    {
-        var tareas = await _tareaService.ObtenerTareasAsync(
-            User.ObtenerUsuarioId(),
-            User.ObtenerRol(),
-            User.ObtenerDepartamentosIds());
+    [HttpGet("departamento/{departamentoId}")]
+    [Authorize(Roles = "Jefe,Encargado Departamento")]
+public async Task<ActionResult<IEnumerable<TareaResponseDto>>> ObtenerPorDepartamento(int departamentoId)
+{
+    var tareas = await _tareaService.ObtenerTareasPorDepartamentoAsync(departamentoId);
+    return Ok(tareas);
+}
 
-        return Ok(tareas);
-    }
+[HttpGet("obtener")]
+public async Task<ActionResult<IEnumerable<TareaResponseDto>>> ObtenerTareas()
+{
+    var tareas = await _tareaService.ObtenerTareasAsync(
+        User.ObtenerUsuarioId(),
+        User.ObtenerRol(),
+        User.ObtenerDepartamentosIds());
+
+    return Ok(tareas);
+}
 
     [HttpPatch("{id}/estado")]
 public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBody] ActualizarEstadoTareaDto dto)
@@ -68,7 +76,7 @@ public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBod
     }
     catch (UnauthorizedAccessException ex)
     {
-        return Forbid(ex.Message);
+        return StatusCode(403, new { error = ex.Message });
     }
     catch (Exception ex)
     {
@@ -93,7 +101,7 @@ public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBod
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Forbid(ex.Message);
+            return StatusCode(403, new { error = ex.Message });
         }
         catch (Exception ex)
         {

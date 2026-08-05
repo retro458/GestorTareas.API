@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GestorTareas.API.Models;
 
-[Index("Email", Name = "UQ__Usuarios__A9D105348B6ED798", IsUnique = true)]
+
 public partial class Usuario
 {
     [Key]
@@ -16,27 +16,13 @@ public partial class Usuario
     public string Nombre { get; set; } = null!;
     [StringLength(50)]
     public string? NombreUsuario {get;set;}
-    [StringLength(150)]
-    public string Email { get; set; } = null!;
-
+    
     [StringLength(255)]
     public string PasswordHash { get; set; } = null!;
-
-    public int? DepartamentoId { get; set; }
-
     public bool? Activo { get; set; }
-
-    public bool? EmailVerificacion { get; set; }
-
-    [StringLength(255)]
-    public string? TokenVerificacion { get; set; }
 
     [Column("RolID")]
     public int? RolId { get; set; }
-
-    [ForeignKey("DepartamentoId")]
-    [InverseProperty("Usuarios")]
-    public virtual Departamento? Departamento { get; set; }
 
     [InverseProperty("Usuario")]
     public virtual ICollection<HistorialTarea> HistorialTareas { get; set; } = new List<HistorialTarea>();

@@ -153,7 +153,7 @@ var app = builder.Build();
 //===========================================================
 // para insertar usuario maestro(admin) en la base de datos
 // ============================================================
-using (var scope = app.Services.CreateScope())
+/*using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
@@ -200,7 +200,7 @@ using (var scope = app.Services.CreateScope())
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Error al verificar o inyectar el usuario semilla basado en roles existentes.");
     }
-}
+}*/
 
 
 // 6. MIDDLEWARE PIPELINE
