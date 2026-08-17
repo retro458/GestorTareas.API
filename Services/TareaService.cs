@@ -97,14 +97,87 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
  
         return tareaResponse;
     }
- 
+    // metodo para editar tareas
+    public async Task<TareaResponseDto>EditarTareaAsync(int tareaId, EditarTareaDto dto,int usuarioActualId,string rolActual, List<int>departamentosActualIds)
+    {
+        if(rolActual != "Jefe" && rolActual!="Encargado Departamento")
+            throw new UnauthorizedAccessException("Solo el jefe o Encargado puede editar tareas");
+
+        var tarea = await _context.Tareas
+            .Include(t => t.Estado)
+            .FirstOrDefaultAsync(t => t.Id == tareaId)
+            ?? throw new Exception("La tarea no existe");
+
+        if(tarea.Estado.NombreEstado == ESTADO_COMPLETADA || tarea.Estado.NombreEstado == ESTADO_CANCELADA)
+            throw new Exception($"No se puede editar una tarea en estado '{tarea.Estado.NombreEstado}'.");
+         
+        var tareaDepartamentoId = tarea.DepartamentoId
+            ?? throw new Exception("La tarea no tiene un departamento asignado");
+
+        if (rolActual == "Encargado Departamento" && !departamentosActualIds.Contains(tareaDepartamentoId))
+            throw new UnauthorizedAccessException("Solo puede editar tareas de departamentos a su cargo");
+
+        // solo se aplican los datos que vengan con valor(edicion parcial)
+         if (!string.IsNullOrWhiteSpace(dto.Titulo))
+             tarea.Titulo = dto.Titulo;
+
+         if (dto.Descripcion != null)
+            tarea.Descripcion = dto.Descripcion;
+
+        if (dto.PrioridadId.HasValue)
+         {
+            var prioridadExiste = await _context.Prioridads.AnyAsync(p => p.PrioridadId == dto.PrioridadId.Value);
+            if (!prioridadExiste)
+                throw new Exception("La prioridad especificada no existe.");
+            tarea.PrioridadId = dto.PrioridadId.Value;
+         } 
+
+        if(dto.FechaVencimiento.HasValue)
+            tarea.FechaVencimiento = dto.FechaVencimiento;
+
+        await _context.SaveChangesAsync();
+
+        _context.HistorialTareas.Add(new HistorialTarea
+        {
+            TareaId = tarea.Id,
+            UsuarioId = usuarioActualId,
+            Accion = "Tarea editada",
+            Fecha = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync();
+
+        var tareaResponse = await MapearTareaResponseAsync(tarea.Id);
+        await NotificarActualizacionTareaAsync(tareaResponse, tareaDepartamentoId);
+
+        return tareaResponse;
+    }
+    // metodo para obtener las tareas completas
+    public async Task<IEnumerable<TareaResponseDto>> ObtenerTareasCompletadasAsync(int usuarioActualId, string rolActual, List<int> departamentosActualIds)
+    {
+        IQueryable<Tarea> query = _context.Tareas
+            .Include(t => t.Estado)
+            .Include(t => t.Prioridad)
+            .Include(t => t.AsignadoANavigation)
+            .Where(t => t.Estado.NombreEstado == "Completada");
+
+        query = rolActual switch
+        {
+            "Jefe" => query,
+            "Encargado Departamento" => query.Where(t => t.DepartamentoId.HasValue && departamentosActualIds.Contains(t.DepartamentoId.Value)),
+            "Empleado" => query.Where(t => t.AsignadoA == usuarioActualId),
+            _ => query.Where(t => false)
+        };
+
+        var tarea = await query.OrderByDescending(t => t.FechaCreacion).ToListAsync();
+        return tarea.Select(MapearTareaResponse);
+    }
     public async Task<IEnumerable<TareaResponseDto>> ObtenerTareasAsync(int usuarioActualId, string rolActual, List<int> departamentosActualIds)
     {
         IQueryable<Tarea> query = _context.Tareas
             .Include(t => t.Estado)
             .Include(t => t.Prioridad)
-            .Include(t => t.AsignadoANavigation);
- 
+            .Include(t => t.AsignadoANavigation)
+            .Where(t => t.Estado.NombreEstado != "Completada");
         query = rolActual switch
         {
             "Jefe" => query,
@@ -250,6 +323,24 @@ if (!nuevoEmpleadoDeptosIds.Contains(tareaDepartamentoId))
         .ToListAsync();
 
     return tareas.Select(MapearTareaResponse);
+}
+
+// metodo para obtener el historial de una tarea
+public async Task<IEnumerable<HistorialTareaResponseDto>> ObtenerHistorialAsync(int tareaId)
+{
+  var historial = await _context.HistorialTareas
+      .Include(h => h.Usuario)
+      .Where(h => h.TareaId == tareaId)
+      .OrderBy(h => h.Fecha)
+      .ToListAsync();
+
+  return historial.Select(h => new HistorialTareaResponseDto
+    {
+        Id = h.Id,
+        Accion = h.Accion,
+        UsuarioNombre = h.Usuario?.Nombre ?? "Usuario desconocido",
+        Fecha = h.Fecha
+    });
 }
  
     /// Envia el evento "TareaActualizada" al grupo de Jefes (siempre) y al

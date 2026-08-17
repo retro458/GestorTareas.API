@@ -41,7 +41,7 @@ namespace GestorTareas.API.Services
             Id = nuevoDepartamento.Id,
             Nombre = nuevoDepartamento.Nombre,
             Descripcion = nuevoDepartamento.Descripcion,
-            Estado = nuevoDepartamento.Activo.GetValueOrDefault() ? "Activo" : "Inactivo"
+            Activo = nuevoDepartamento.Activo.GetValueOrDefault()
         };
     }
 
@@ -52,8 +52,34 @@ namespace GestorTareas.API.Services
         {
             Id = d.Id,
             Nombre = d.Nombre,
-            Descripcion = d.Descripcion
+            Descripcion = d.Descripcion,
+            Activo = d.Activo.GetValueOrDefault()
         });
     }
+
+   public async Task CambiarEstadoActivoAsync(int departamentoId, bool nuevoEstado)
+{
+    var departamento = await _context.Departamentos.FindAsync(departamentoId)
+        ?? throw new Exception("El departamento no existe.");
+
+    departamento.Activo = nuevoEstado;
+    await _context.SaveChangesAsync();
+}
+
+public async Task<IEnumerable<DepartamentoResponseDto>> ObtenerDepartamentosInactivosAsync()
+{
+    var departamentos = await _context.Departamentos
+        .Where(d => d.Activo == false)
+        .OrderBy(d => d.Nombre)
+        .ToListAsync();
+
+    return departamentos.Select(d => new DepartamentoResponseDto
+    {
+        Id = d.Id,
+        Nombre = d.Nombre,
+        Descripcion = d.Descripcion,
+        Activo = d.Activo.GetValueOrDefault()
+    });
+}
   }
 }

@@ -63,6 +63,59 @@ public async Task<ActionResult<IEnumerable<UsuarioResponseDto>>> ObtenerTodosLos
     var empleados = await _usuarioService.GetTodosLosEmpleadosAsync();
     return Ok(empleados);
  }
+
+// metodos para activas y desactivar empleados
+[HttpPatch("{id}/desactivar")]
+[Authorize(Roles = "Jefe,Encargado Departamento")]
+public async Task<IActionResult> DesactivarUsuario(int id)
+{
+    try
+    {
+        await _usuarioService.CambiarEstadoAsync(id, false, User.ObtenerRol(), User.ObtenerDepartamentosIds());
+        return Ok(new {mensaje = "Usuario desactivado correctamente"});
+
+    }
+    catch(UnauthorizedAccessException ex)
+    {
+        return StatusCode(403, new{erro = ex.Message});
+    }
+    catch(Exception ex)
+    {
+        return BadRequest(new {error = ex.Message});
+    }
+}
+
+[HttpPatch("{id}/activar")]
+[Authorize(Roles = "Jefe,Encargado Departamento")]
+public async Task<IActionResult> ActivarUsuario(int id)
+{
+    try
+    {
+        await _usuarioService.CambiarEstadoAsync(id, true, User.ObtenerRol(), User.ObtenerDepartamentosIds());
+        return Ok(new {mensaje = "Usuario desactivado correctamente"});
+
+    }
+    catch(UnauthorizedAccessException ex)
+    {
+        return StatusCode(403, new{erro = ex.Message});
+    }
+    catch(Exception ex)
+    {
+        return BadRequest(new {error = ex.Message});
+    }
+}
+    [HttpGet("empleados/inactivos")]
+[Authorize(Roles = "Jefe,Encargado Departamento")]
+public async Task<ActionResult<IEnumerable<UsuarioResponseDto>>> ObtenerEmpleadosInactivos()
+{
+    var rol = User.ObtenerRol();
+    var departamentosIds = User.ObtenerDepartamentosIds();
+    var usuarioActualId = User.ObtenerUsuarioId();
+
+    var empleados = await _usuarioService.GetEmpleadosInactivosAsync(rol, departamentosIds, usuarioActualId);
+    return Ok(empleados);
+}
+
 }
 /*[HttpGet("verificar-cuenta")]
 public async Task<IActionResult> VerificarCuenta([FromQuery] string token)

@@ -37,5 +37,6 @@ public partial class Usuario
     [InverseProperty("CreadoPorNavigation")]
     public virtual ICollection<Tarea> TareaCreadoPorNavigations { get; set; } = new List<Tarea>();
     public virtual ICollection<UsuariosDepartamentos> UsuariosDepartamentos {get;set;} = new List<UsuariosDepartamentos>();
+    public virtual ICollection<ComentariosTarea> ComentariosTarea {get;set;} = new List<ComentariosTarea>();
     public virtual ICollection<Notificaciones> Notificaciones { get; set; } = new List<Notificaciones>();
 }

@@ -58,7 +58,9 @@ public partial class Tarea
     public virtual Prioridad Prioridad { get; set; } = null!;
 
     
-
+    //coleccion de comentarios
+    //
+    public virtual ICollection<ComentariosTarea> ComentariosTarea {get;set;} = new List<ComentariosTarea>();
     public virtual ICollection<HistorialTarea> HistorialTareas { get; set; } = new List<HistorialTarea>();
 
     public virtual ICollection<Notificaciones> Notificaciones { get; set; } = new List<Notificaciones>();

@@ -41,7 +41,29 @@ public class TareasController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
-
+[HttpPatch("{id}/editar")]
+[Authorize(Roles = "Jefe,Encargado Departamento")]
+public async Task<ActionResult<TareaResponseDto>> EditarTarea(int id, [FromBody]EditarTareaDto dto)
+{
+    try
+    {
+        var tarea = await _tareaService.EditarTareaAsync(
+                id,
+                dto,
+                User.ObtenerUsuarioId(),
+                User.ObtenerRol(),
+                User.ObtenerDepartamentosIds());
+        return Ok(tarea);
+    }
+    catch(UnauthorizedAccessException ex)
+    {
+        return StatusCode(403, new {error = ex.Message});
+    }
+    catch(Exception ex)
+    {
+        return BadRequest(new {error = ex.Message});
+    }
+}
     [HttpGet("departamento/{departamentoId}")]
     [Authorize(Roles = "Jefe,Encargado Departamento")]
 public async Task<ActionResult<IEnumerable<TareaResponseDto>>> ObtenerPorDepartamento(int departamentoId)
@@ -58,6 +80,16 @@ public async Task<ActionResult<IEnumerable<TareaResponseDto>>> ObtenerTareas()
         User.ObtenerRol(),
         User.ObtenerDepartamentosIds());
 
+    return Ok(tareas);
+}
+
+[HttpGet("Completadas")]
+public async Task<ActionResult<TareaResponseDto>> ObtenerCompletadas()
+{
+    var tareas = await _tareaService.ObtenerTareasCompletadasAsync(
+            User.ObtenerUsuarioId(),
+            User.ObtenerRol(),
+            User.ObtenerDepartamentosIds());
     return Ok(tareas);
 }
 
@@ -108,4 +140,12 @@ public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBod
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    [HttpGet("{id}/historial")]
+    public async Task<ActionResult<IEnumerable<HistorialTareaResponseDto>>> ObtenerHistorial(int id)
+    {
+        var historial = await _tareaService.ObtenerHistorialAsync(id);
+        return Ok(historial);
+
+    }   
 }

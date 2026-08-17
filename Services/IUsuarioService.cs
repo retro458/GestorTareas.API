@@ -9,4 +9,6 @@ namespace GestorTareas.API.Services;
         Task<UsuarioResponseDto> GetUsuarioByIdAsync(int id);
         Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosPorDepartamentoAsync(List<int> departamentosIds,int usuarioActualId);
         Task<IEnumerable<UsuarioResponseDto>> GetTodosLosEmpleadosAsync();
+        Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosInactivosAsync(string rol, List<int> departamentosIds, int usuarioActualId);
+        Task CambiarEstadoAsync(int usuarioId, bool nuevoEstado, string rolQueEjecuta, List<int> departamentosQueEjecutaIds);
     }

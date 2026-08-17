@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using GestorTareas.API.Models;  
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using GestorTareas.API.Models;
 
 namespace GestorTareas.API.Data;
 
@@ -31,8 +32,10 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
     public virtual DbSet<Notificaciones> Notificaciones { get; set; }
+    
     public virtual DbSet<UsuariosDepartamentos>  UsuariosDepartamentos {get;set;}
     
+    public virtual DbSet<ComentariosTarea> ComentariosTarea {get;set;}
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Departamento>(entity =>
@@ -135,6 +138,46 @@ public partial class AppDbContext : DbContext
                  .HasForeignKey(d => d.DepartamentoId)
                  .HasConstraintName("FK_UsuariosDepartamentos_Departamentos");
         });
+
+        modelBuilder.Entity<ComentariosTarea>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.HasOne(c => c.Tarea)
+                .WithMany(t => t.ComentariosTarea)
+                .HasForeignKey(c => c.TareaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(c => c.Usuario)
+                .WithMany(u => u.ComentariosTarea)
+                .HasForeignKey(c => c.UsuarioId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+        });
+        // SQL Server (datetime/datetime2) no guarda zona horaria: toda fecha que
+        // vuelve de la base pierde el Kind y llega como Unspecified, aunque se haya
+        // guardado con DateTime.UtcNow o con getdate() en un servidor con reloj UTC.
+        // Sin el Kind=Utc, System.Text.Json serializa sin la "Z" final y el
+        // new Date(...) del frontend la interpreta como hora local en vez de UTC,
+        // desfasando historial/comentarios/tareas segun la zona horaria del navegador.
+        var conversorUtc = new ValueConverter<DateTime, DateTime>(
+            v => v,
+            v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+        var conversorUtcNullable = new ValueConverter<DateTime?, DateTime?>(
+            v => v,
+            v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTime))
+                    property.SetValueConverter(conversorUtc);
+                else if (property.ClrType == typeof(DateTime?))
+                    property.SetValueConverter(conversorUtcNullable);
+            }
+        }
+
         OnModelCreatingPartial(modelBuilder);
     }
 

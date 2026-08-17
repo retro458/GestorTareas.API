@@ -40,4 +40,44 @@ public class DepartamentoController : ControllerBase
         var departamentos = await _departamentoService.ObtenerDepartamentosAsync();
         return Ok(departamentos);
     }
+
+    [HttpPatch("{id}/desactivar")]
+    [Authorize(Roles = "Jefe")]
+    public async Task<IActionResult> DesactivarDepartamento(int id)
+    {
+        try
+        {
+            await _departamentoService.CambiarEstadoActivoAsync(id,false);
+            return Ok(new {mensaje = "Departamento desactivado correctamente."});
+
+        }
+        catch(Exception ex)
+        {
+            return BadRequest(new {error = ex.Message});
+        }
+    }
+
+    
+    [HttpPatch("{id}/activar")]
+    [Authorize(Roles = "Jefe")]
+    public async Task<IActionResult> ActivarDepartamento(int id)
+    {
+        try
+        {
+            await _departamentoService.CambiarEstadoActivoAsync(id,true);
+            return Ok(new {mensaje = "Departamento activado correctamente."});
+
+        }
+        catch(Exception ex)
+        {
+            return BadRequest(new {error = ex.Message});
+        }
+    }
+[HttpGet("inactivos")]
+[Authorize(Roles = "Jefe")]
+public async Task<ActionResult<IEnumerable<DepartamentoResponseDto>>> ObtenerInactivos()
+{
+    var departamentos = await _departamentoService.ObtenerDepartamentosInactivosAsync();
+    return Ok(departamentos);
+}
 }

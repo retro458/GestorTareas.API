@@ -173,6 +173,60 @@ public async Task<IEnumerable<UsuarioResponseDto>> GetTodosLosEmpleadosAsync()
         Departamentos = u.UsuariosDepartamentos
                 .Select(ud => new DepartamentoResumenDto { Id = ud.DepartamentoId, Nombre = ud.Departamento!.Nombre })
                 .ToList()
+    }).ToList();
+   }
+
+public async Task CambiarEstadoAsync(int usuarioId, bool nuevoEstado, string rolQueEjecuta, List<int> departamentosQueEjecutaIds)
+
+{
+    var usuario = await _context.Usuarios
+        .Include(u => u.UsuariosDepartamentos)
+        .Include(u => u.Rol)
+        .FirstOrDefaultAsync(u => u.Id == usuarioId)
+        ?? throw new Exception("El usuario no existe");
+
+    // no se puede desactivar el jefe principal
+     if (usuario.Rol!.NombreRol == "Jefe")
+            throw new UnauthorizedAccessException("No se puede desactivar al jefe general");
+
+    // el encar de departamento solo puede activar/desactivar usuarios de su propio departamento
+    if(rolQueEjecuta == "Encargado Departamento")
+    {
+        var usuariosDeptosIds = usuario.UsuariosDepartamentos.Select(ud => ud.DepartamentoId);
+        bool comparten = departamentosQueEjecutaIds.Intersect(usuariosDeptosIds).Any();
+        if(!comparten)
+            throw new UnauthorizedAccessException("Solo puede administrar usuarios bajo su cargo");
+    }
+    usuario.Activo = nuevoEstado;
+    await _context.SaveChangesAsync();
+}    
+    public async Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosInactivosAsync(string rol, List<int> departamentosIds, int usuarioActualId)
+{
+    IQueryable<Usuario> query = _context.Usuarios
+        .Include(u => u.Rol)
+        .Include(u => u.UsuariosDepartamentos)
+            .ThenInclude(ud => ud.Departamento)
+        .Where(u => u.Activo == false);
+
+    if (rol == "Encargado Departamento")
+    {
+        query = query.Where(u => u.UsuariosDepartamentos.Any(ud => departamentosIds.Contains(ud.DepartamentoId)));
+    }
+    // Si es Jefe, no se filtra mas - ve todos los inactivos de la empresa
+
+    var empleados = await query.OrderBy(u => u.Nombre).ToListAsync();
+
+    return empleados.Select(u => new UsuarioResponseDto
+    {
+        Id = u.Id,
+        Nombre = u.Nombre,
+        NombreUsuario = u.NombreUsuario,
+        NombreRol = u.Rol!.NombreRol,
+        Departamentos = u.UsuariosDepartamentos
+            .Select(ud => new DepartamentoResumenDto { Id = ud.DepartamentoId, Nombre = ud.Departamento!.Nombre })
+            .ToList()
     });
-   } 
+}
+
+
 }
