@@ -6,6 +6,7 @@ public interface ITareaService
 {
 
     Task<TareaResponseDto> CrearTareaAsync(CrearTareaDto dto, int creadoPorId, string rolCreador, List<int> departamentosCreadorIds);
+    Task<TareaResponseDto> AutoAsignarTareaAsync(AutoAsignarTareaDto dto, int empleadoId, List<int> departamentosEmpleadoIds);
     Task<IEnumerable<TareaResponseDto>> ObtenerTareasAsync(int usuarioActualId, string rolActual, List<int> departamentosActualIds);
     Task<TareaResponseDto> EditarTareaAsync(int tareaId, EditarTareaDto dto, int usuarioActualId, string rolActual, List<int> departamentosActualIds);
     Task<TareaResponseDto> CambiarEstadoAsync(int tareaId, int nuevoEstadoId, int usuarioActualId, string rolActual);
@@ -14,4 +15,3 @@ public interface ITareaService
     Task<IEnumerable<HistorialTareaResponseDto>> ObtenerHistorialAsync(int tareaId);
     Task<TareaResponseDto> ReasignarTareaAsync(int tareaId, int nuevoAsignadoA, int usuarioQueReasignaId, string rolQueReasigna, List<int> departamentosQueReasignaIds);
 }
- 

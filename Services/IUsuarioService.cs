@@ -7,8 +7,10 @@ namespace GestorTareas.API.Services;
     {
         Task<UsuarioResponseDto> RegisterAsync(string nombre, string nombreUsuario, string password, string nombreRol, List<int> departamentosIds, string rolCreador, List<int> departamentosCreadorIds);
         Task<UsuarioResponseDto> GetUsuarioByIdAsync(int id);
+        Task<UsuarioResponseDto> EditarUsuarioAsync(int usuarioId, string nombreUsuario, List<int> departamentosIds, string rolQueEjecuta, List<int> departamentosQueEjecutaIds);
         Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosPorDepartamentoAsync(List<int> departamentosIds,int usuarioActualId);
         Task<IEnumerable<UsuarioResponseDto>> GetTodosLosEmpleadosAsync();
         Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosInactivosAsync(string rol, List<int> departamentosIds, int usuarioActualId);
         Task CambiarEstadoAsync(int usuarioId, bool nuevoEstado, string rolQueEjecuta, List<int> departamentosQueEjecutaIds);
+        Task RestablecerPasswordAsync(int usuarioId, string nuevaPassword, string rolQueEjecuta, List<int> departamentosQueEjecutaIds);
     }

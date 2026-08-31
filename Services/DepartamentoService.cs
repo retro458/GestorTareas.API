@@ -45,6 +45,25 @@ namespace GestorTareas.API.Services
         };
     }
 
+    public async Task<IEnumerable<DepartamentoResponseDto>> ObtenerMisDepartamentosAsync(int usuarioId)
+    {
+        // Devuelve solo los departamentos activos a los que el usuario autenticado pertenece.
+        // Sirve para que Empleados (y cualquier rol) puedan resolver nombres de sus propios departamentos.
+        var departamentos = await _context.UsuariosDepartamentos
+            .Where(ud => ud.UsuarioId == usuarioId && ud.Departamento!.Activo == true)
+            .Select(ud => new DepartamentoResponseDto
+            {
+                Id = ud.Departamento!.Id,
+                Nombre = ud.Departamento.Nombre,
+                Descripcion = ud.Departamento.Descripcion,
+                Activo = ud.Departamento.Activo.GetValueOrDefault()
+            })
+            .OrderBy(d => d.Nombre)
+            .ToListAsync();
+
+        return departamentos;
+    }
+
     public async Task<IEnumerable<DepartamentoResponseDto>> ObtenerDepartamentosAsync()
     {
         var departamentos = await _context.Departamentos.ToListAsync();

@@ -97,6 +97,105 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
  
         return tareaResponse;
     }
+
+    // metodo para que un empleado se autoasigne una tarea
+    public async Task<TareaResponseDto> AutoAsignarTareaAsync(AutoAsignarTareaDto dto, int empleadoId, List<int> departamentosEmpleadoIds)
+    {
+        // el empleado solo puede crear tareas en departamentos a los que pertenece
+        if (!departamentosEmpleadoIds.Contains(dto.DepartamentoId))
+            throw new UnauthorizedAccessException("Solo puede autoasignarse tareas en departamentos a los que pertenece.");
+
+        // que el departamento realmente exista y este activo
+        var departamento = await _context.Departamentos.FindAsync(dto.DepartamentoId)
+            ?? throw new Exception("El departamento especificado no existe.");
+
+        if (departamento.Activo == false)
+            throw new Exception("No se pueden crear tareas en un departamento inactivo.");
+
+        var empleado = await _context.Usuarios.FindAsync(empleadoId)
+            ?? throw new Exception("El usuario no existe.");
+
+        // evita que el mismo empleado se autoasigne dos veces la misma tarea activa
+        var existeTareaActiva = await _context.Tareas
+            .Include(t => t.Estado)
+            .AnyAsync(t => t.Titulo == dto.Titulo
+                        && t.AsignadoA == empleadoId
+                        && t.Estado.NombreEstado != ESTADO_COMPLETADA
+                        && t.Estado.NombreEstado != ESTADO_CANCELADA);
+
+        if (existeTareaActiva)
+            throw new Exception($"Ya tiene una tarea activa con el título '{dto.Titulo}'.");
+
+        var estadoInicial = await _context.Estados.FirstAsync(e => e.EsEstadoInicial);
+
+        var prioridad = await _context.Prioridads.FindAsync(dto.PrioridadId)
+            ?? throw new Exception("La prioridad especificada no existe.");
+
+        var tarea = new Tarea
+        {
+            Titulo = dto.Titulo,
+            Descripcion = dto.Descripcion,
+            EstadoId = estadoInicial.EstadoId,
+            PrioridadId = dto.PrioridadId,
+            DepartamentoId = dto.DepartamentoId,
+            AsignadoA = empleadoId,   // se autoasigna
+            CreadoPor = empleadoId,   // y figura como creador
+            FechaCreacion = DateTime.UtcNow,
+            FechaVencimiento = dto.FechaVencimiento
+        };
+
+        _context.Tareas.Add(tarea);
+        await _context.SaveChangesAsync();
+
+        _context.HistorialTareas.Add(new HistorialTarea
+        {
+            TareaId = tarea.Id,
+            UsuarioId = empleadoId,
+            Accion = $"Tarea autoasignada por {empleado.Nombre}.",
+            Fecha = DateTime.UtcNow
+        });
+
+        // notifica a Jefe y Encargados del departamento (no al empleado — seria a si mismo)
+        var supervisores = await _context.Usuarios
+            .Where(u => u.Activo == true
+                     && (u.Rol!.NombreRol == "Jefe"
+                        || (u.Rol!.NombreRol == "Encargado Departamento"
+                            && u.UsuariosDepartamentos.Any(ud => ud.DepartamentoId == dto.DepartamentoId))))
+            .Select(u => u.Id)
+            .ToListAsync();
+
+        var mensaje = $"{empleado.Nombre} se autoasignó la tarea '{tarea.Titulo}'.";
+        var notificacionesCreadas = new List<Notificaciones>();
+
+        foreach (var supervisorId in supervisores)
+        {
+            var noti = new Notificaciones
+            {
+                UsuarioId = supervisorId,
+                TareaId = tarea.Id,
+                Mensaje = mensaje,
+                Leida = false,
+                FechaCreacion = DateTime.UtcNow
+            };
+            _context.Notificaciones.Add(noti);
+            notificacionesCreadas.Add(noti);
+        }
+
+        await _context.SaveChangesAsync();
+
+        var tareaResponse = await MapearTareaResponseAsync(tarea.Id);
+
+        // --- Eventos en tiempo real ---
+        foreach (var noti in notificacionesCreadas)
+        {
+            await _hub.Clients.User(noti.UsuarioId.ToString()!)
+                .SendAsync("NuevaNotificacion", MapearNotificacionResponse(noti));
+        }
+
+        await NotificarActualizacionTareaAsync(tareaResponse, dto.DepartamentoId);
+
+        return tareaResponse;
+    }
     // metodo para editar tareas
     public async Task<TareaResponseDto>EditarTareaAsync(int tareaId, EditarTareaDto dto,int usuarioActualId,string rolActual, List<int>departamentosActualIds)
     {

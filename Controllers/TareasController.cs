@@ -41,6 +41,28 @@ public class TareasController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+    [HttpPost("autoasignar")]
+    [Authorize(Roles = "Empleado")]
+    public async Task<ActionResult<TareaResponseDto>> AutoAsignarTarea([FromBody] AutoAsignarTareaDto dto)
+    {
+        try
+        {
+            var tarea = await _tareaService.AutoAsignarTareaAsync(
+                dto,
+                User.ObtenerUsuarioId(),
+                User.ObtenerDepartamentosIds());
+
+            return Ok(tarea);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 [HttpPatch("{id}/editar")]
 [Authorize(Roles = "Jefe,Encargado Departamento")]
 public async Task<ActionResult<TareaResponseDto>> EditarTarea(int id, [FromBody]EditarTareaDto dto)

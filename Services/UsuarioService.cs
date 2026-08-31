@@ -125,6 +125,87 @@ return new UsuarioResponseDto
     }
 
    
+public async Task<UsuarioResponseDto> EditarUsuarioAsync(
+    int usuarioId, string nombreUsuario, List<int> departamentosIds,
+    string rolQueEjecuta, List<int> departamentosQueEjecutaIds)
+{
+    var usuario = await _context.Usuarios
+        .Include(u => u.Rol)
+        .Include(u => u.UsuariosDepartamentos)
+        .FirstOrDefaultAsync(u => u.Id == usuarioId)
+        ?? throw new Exception("El usuario no existe.");
+
+    // no se puede editar al jefe general
+    if (usuario.Rol!.NombreRol == "Jefe")
+        throw new UnauthorizedAccessException("No se puede editar al jefe general.");
+
+    // el encargado de departamento solo puede editar usuarios de su propio departamento
+    if (rolQueEjecuta == "Encargado Departamento")
+    {
+        var usuariosDeptosIds = usuario.UsuariosDepartamentos.Select(ud => ud.DepartamentoId);
+        bool comparten = departamentosQueEjecutaIds.Intersect(usuariosDeptosIds).Any();
+        if (!comparten)
+            throw new UnauthorizedAccessException("Solo puede administrar usuarios bajo su cargo.");
+    }
+
+    // el nombre de usuario no debe chocar con el de otro usuario
+    var usuarioExistente = await _context.Usuarios
+        .FirstOrDefaultAsync(u => u.NombreUsuario == nombreUsuario && u.Id != usuarioId);
+    if (usuarioExistente != null)
+        throw new Exception("El nombre de usuario ya está en uso.");
+
+    if (!departamentosIds.Any())
+        throw new Exception("El usuario debe pertenecer al menos a un departamento.");
+
+    var departamentosValidos = await _context.Departamentos
+        .Where(d => departamentosIds.Contains(d.Id))
+        .Select(d => d.Id)
+        .ToListAsync();
+
+    if (departamentosValidos.Count != departamentosIds.Distinct().Count())
+        throw new Exception("Uno o más departamentos especificados no existen.");
+
+    // el Encargado solo puede asignar departamentos a los que el mismo pertenece
+    if (rolQueEjecuta == "Encargado Departamento" && departamentosIds.Any(d => !departamentosQueEjecutaIds.Contains(d)))
+        throw new UnauthorizedAccessException("Solo puede asignar departamentos a los que usted mismo pertenece.");
+
+    
+    usuario.NombreUsuario = nombreUsuario;
+
+    // sincroniza la tabla intermedia: quita los departamentos que ya no aplican y agrega los nuevos
+    var actuales = usuario.UsuariosDepartamentos.Select(ud => ud.DepartamentoId).ToList();
+
+    var aEliminar = usuario.UsuariosDepartamentos.Where(ud => !departamentosIds.Contains(ud.DepartamentoId)).ToList();
+    foreach (var ud in aEliminar)
+        _context.UsuariosDepartamentos.Remove(ud);
+
+    var aAgregar = departamentosIds.Where(id => !actuales.Contains(id));
+    foreach (var deptoId in aAgregar)
+    {
+        _context.UsuariosDepartamentos.Add(new UsuariosDepartamentos
+        {
+            UsuarioId = usuario.Id,
+            DepartamentoId = deptoId
+        });
+    }
+
+    await _context.SaveChangesAsync();
+
+    var departamentosInfo = await _context.Departamentos
+        .Where(d => departamentosIds.Contains(d.Id))
+        .Select(d => new DepartamentoResumenDto { Id = d.Id, Nombre = d.Nombre })
+        .ToListAsync();
+
+    return new UsuarioResponseDto
+    {
+        Id = usuario.Id,
+        Nombre = usuario.Nombre,
+        NombreUsuario = usuario.NombreUsuario,
+        NombreRol = usuario.Rol!.NombreRol,
+        Departamentos = departamentosInfo
+    };
+}
+
 public async Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosPorDepartamentoAsync(List<int> departamentosIds,int usuarioActualId)
 {
     // Solo empleados (no jefes ni encargados) del departamento especifico.
@@ -200,6 +281,35 @@ public async Task CambiarEstadoAsync(int usuarioId, bool nuevoEstado, string rol
     usuario.Activo = nuevoEstado;
     await _context.SaveChangesAsync();
 }    
+
+public async Task RestablecerPasswordAsync(int usuarioId, string nuevaPassword, string rolQueEjecuta, List<int> departamentosQueEjecutaIds)
+{
+    var usuario = await _context.Usuarios
+        .Include(u => u.UsuariosDepartamentos)
+        .Include(u => u.Rol)
+        .FirstOrDefaultAsync(u => u.Id == usuarioId)
+        ?? throw new Exception("El usuario no existe.");
+
+    // no se puede restablecer la contrasena del jefe general
+    if (usuario.Rol!.NombreRol == "Jefe")
+        throw new UnauthorizedAccessException("No se puede restablecer la contraseña del jefe general.");
+
+    // el encargado de departamento solo puede restablecer contrasenas de usuarios de sus propios departamentos
+    if (rolQueEjecuta == "Encargado Departamento")
+    {
+        var usuariosDeptosIds = usuario.UsuariosDepartamentos.Select(ud => ud.DepartamentoId);
+        bool comparten = departamentosQueEjecutaIds.Intersect(usuariosDeptosIds).Any();
+        if (!comparten)
+            throw new UnauthorizedAccessException("Solo puede administrar usuarios bajo su cargo.");
+    }
+
+    // validacion minima extra por si el DTO se salta la anotacion
+    if (string.IsNullOrWhiteSpace(nuevaPassword) || nuevaPassword.Length < 6)
+        throw new Exception("La contraseña debe tener al menos 6 caracteres.");
+
+    usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(nuevaPassword);
+    await _context.SaveChangesAsync();
+}
     public async Task<IEnumerable<UsuarioResponseDto>> GetEmpleadosInactivosAsync(string rol, List<int> departamentosIds, int usuarioActualId)
 {
     IQueryable<Usuario> query = _context.Usuarios

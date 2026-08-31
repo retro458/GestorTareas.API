@@ -64,6 +64,27 @@ public async Task<ActionResult<IEnumerable<UsuarioResponseDto>>> ObtenerTodosLos
     return Ok(empleados);
  }
 
+[HttpPut("{id}/editar")]
+[Authorize(Roles = "Jefe,Encargado Departamento")]
+public async Task<ActionResult<UsuarioResponseDto>> EditarUsuario(int id, [FromBody] EditarUsuarioDto request)
+{
+    try
+    {
+        var usuario = await _usuarioService.EditarUsuarioAsync(
+            id, request.NombreUsuario!, request.DepartamentosIds,
+            User.ObtenerRol(), User.ObtenerDepartamentosIds());
+        return Ok(usuario);
+    }
+    catch (UnauthorizedAccessException ex)
+    {
+        return StatusCode(403, new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new { error = ex.Message });
+    }
+}
+
 // metodos para activas y desactivar empleados
 [HttpPatch("{id}/desactivar")]
 [Authorize(Roles = "Jefe,Encargado Departamento")]
@@ -104,6 +125,26 @@ public async Task<IActionResult> ActivarUsuario(int id)
         return BadRequest(new {error = ex.Message});
     }
 }
+[HttpPatch("{id}/restablecer-password")]
+[Authorize(Roles = "Jefe,Encargado Departamento")]
+public async Task<IActionResult> RestablecerPassword(int id, [FromBody] RestablecerPasswordDto dto)
+{
+    try
+    {
+        await _usuarioService.RestablecerPasswordAsync(
+            id, dto.NuevaPassword!, User.ObtenerRol(), User.ObtenerDepartamentosIds());
+        return Ok(new { mensaje = "Contraseña restablecida correctamente." });
+    }
+    catch (UnauthorizedAccessException ex)
+    {
+        return StatusCode(403, new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new { error = ex.Message });
+    }
+}
+
     [HttpGet("empleados/inactivos")]
 [Authorize(Roles = "Jefe,Encargado Departamento")]
 public async Task<ActionResult<IEnumerable<UsuarioResponseDto>>> ObtenerEmpleadosInactivos()

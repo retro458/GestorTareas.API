@@ -1,6 +1,7 @@
 using GestorTareas.API.DTOs.Departamento;
 using GestorTareas.API.Services;
 using GestorTareas.API.Data;
+using GestorTareas.API.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,6 +39,14 @@ public class DepartamentoController : ControllerBase
     public async Task<ActionResult<IEnumerable<DepartamentoResponseDto>>> ObtenerDepartamentosAsync()
     {
         var departamentos = await _departamentoService.ObtenerDepartamentosAsync();
+        return Ok(departamentos);
+    }
+
+    [HttpGet("mis-departamentos")]
+    [Authorize]
+    public async Task<ActionResult<IEnumerable<DepartamentoResponseDto>>> ObtenerMisDepartamentos()
+    {
+        var departamentos = await _departamentoService.ObtenerMisDepartamentosAsync(User.ObtenerUsuarioId());
         return Ok(departamentos);
     }
 

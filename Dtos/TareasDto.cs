@@ -60,3 +60,12 @@ public class TareaDetalleResponseDto
     public TareaResponseDto Tarea { get; set; } = null!;
     public List<HistorialTareaResponseDto> Historial { get; set; } = new();
 }
+
+public class AutoAsignarTareaDto
+{
+    public string Titulo { get; set; } = string.Empty;
+    public string? Descripcion { get; set; }
+    public int DepartamentoId { get; set; }
+    public int PrioridadId { get; set; }
+    public DateTime? FechaVencimiento { get; set; }
+}
