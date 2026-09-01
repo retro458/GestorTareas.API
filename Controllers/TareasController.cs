@@ -169,5 +169,26 @@ public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBod
         var historial = await _tareaService.ObtenerHistorialAsync(id);
         return Ok(historial);
 
-    }   
+    }  
+        [HttpGet("usuario/{usuarioId}")]
+    [Authorize(Roles = "Jefe,Encargado Departamento")]
+    public async Task<ActionResult<TareasPorUsuarioResponseDto>> ObtenerTareasPorUsuario(int usuarioId)
+    {
+        try
+        {
+            var resultado = await _tareaService.ObtenerTareasPorUsuarioAsync(
+                usuarioId,
+                User.ObtenerRol(),
+                User.ObtenerDepartamentosIds());
+            return Ok(resultado);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }

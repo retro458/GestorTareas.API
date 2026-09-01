@@ -533,4 +533,49 @@ public async Task<IEnumerable<HistorialTareaResponseDto>> ObtenerHistorialAsync(
             FechaCreacion = tarea.FechaCreacion
         };
     }
+
+        // devuelve las tareas de un usuario especifico separadas: las que tiene asignadas y las que el creo
+    public async Task<TareasPorUsuarioResponseDto> ObtenerTareasPorUsuarioAsync(int usuarioObjetivoId, string rolQueConsulta, List<int> departamentosQueConsultaIds)
+    {
+        var usuarioObjetivo = await _context.Usuarios
+            .Include(u => u.UsuariosDepartamentos)
+            .FirstOrDefaultAsync(u => u.Id == usuarioObjetivoId)
+            ?? throw new Exception("El usuario consultado no existe.");
+ 
+        // el Encargado solo puede consultar usuarios que compartan al menos un departamento con el
+        if (rolQueConsulta == "Encargado Departamento")
+        {
+            var deptosDelObjetivo = usuarioObjetivo.UsuariosDepartamentos.Select(ud => ud.DepartamentoId);
+            bool comparten = departamentosQueConsultaIds.Intersect(deptosDelObjetivo).Any();
+            if (!comparten)
+                throw new UnauthorizedAccessException("Solo puede consultar tareas de usuarios en sus departamentos.");
+        }
+ 
+        var tareasBase = _context.Tareas
+            .Include(t => t.Estado)
+            .Include(t => t.Prioridad)
+            .Include(t => t.AsignadoANavigation)
+            .AsQueryable();
+ 
+        var asignadas = await tareasBase
+            .Where(t => t.AsignadoA == usuarioObjetivoId)
+            .OrderByDescending(t => t.FechaCreacion)
+            .ToListAsync();
+ 
+        var creadas = await tareasBase
+            .Where(t => t.CreadoPor == usuarioObjetivoId)
+            .OrderByDescending(t => t.FechaCreacion)
+            .ToListAsync();
+ 
+        return new TareasPorUsuarioResponseDto
+        {
+            UsuarioId = usuarioObjetivo.Id,
+            UsuarioNombre = usuarioObjetivo.Nombre,
+            Asignadas = asignadas.Select(MapearTareaResponse).ToList(),
+            Creadas = creadas.Select(MapearTareaResponse).ToList()
+        };
+    }
+ 
+  
+
 }

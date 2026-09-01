@@ -69,3 +69,14 @@ public class AutoAsignarTareaDto
     public int PrioridadId { get; set; }
     public DateTime? FechaVencimiento { get; set; }
 }
+
+
+public class TareasPorUsuarioResponseDto
+{
+ public int UsuarioId {get;set;}
+ public string UsuarioNombre {get;set;}
+ public List<TareaResponseDto> Asignadas {get;set;} = new();
+ public List<TareaResponseDto> Creadas {get;set;} = new();
+
+
+}

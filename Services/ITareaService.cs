@@ -13,5 +13,6 @@ public interface ITareaService
     Task<IEnumerable<TareaResponseDto>> ObtenerTareasCompletadasAsync(int usuarioActualId, string rolActual, List<int> departamentosActualIds);
     Task<IEnumerable<TareaResponseDto>> ObtenerTareasPorDepartamentoAsync(int departamentoId);
     Task<IEnumerable<HistorialTareaResponseDto>> ObtenerHistorialAsync(int tareaId);
+     Task<TareasPorUsuarioResponseDto> ObtenerTareasPorUsuarioAsync(int usuarioObjetivoId, string rolQueConsulta, List<int> departamentosQueConsultaIds);
     Task<TareaResponseDto> ReasignarTareaAsync(int tareaId, int nuevoAsignadoA, int usuarioQueReasignaId, string rolQueReasigna, List<int> departamentosQueReasignaIds);
 }
