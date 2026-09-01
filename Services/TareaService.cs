@@ -576,6 +576,66 @@ public async Task<IEnumerable<HistorialTareaResponseDto>> ObtenerHistorialAsync(
         };
     }
  
-  
+     // filtro: "activas" (por defecto, excluye Completada y Cancelada), "completadas", "todas"
+    public async Task<IEnumerable<ReporteDepartamentoDto>> ObtenerReportePorDepartamentoAsync(
+        string filtro, string rolQueConsulta, List<int> departamentosQueConsultaIds)
+    {
+        var deptosQuery = _context.Departamentos.Where(d => d.Activo == true);
+ 
+        // el Encargado solo ve el reporte de sus departamentos
+        if (rolQueConsulta == "Encargado Departamento")
+        {
+            deptosQuery = deptosQuery.Where(d => departamentosQueConsultaIds.Contains(d.Id));
+        }
+ 
+        var departamentos = await deptosQuery.OrderBy(d => d.Nombre).ToListAsync();
+        var deptoIds = departamentos.Select(d => d.Id).ToList();
+ 
+        // una sola query para todas las tareas de los departamentos visibles
+        var tareasQuery = _context.Tareas
+            .Include(t => t.Estado)
+            .Include(t => t.Prioridad)
+            .Include(t => t.AsignadoANavigation)
+            .Where(t => t.DepartamentoId.HasValue && deptoIds.Contains(t.DepartamentoId.Value));
+ 
+        var filtroNormalizado = (filtro ?? "activas").ToLowerInvariant();
+        if (filtroNormalizado == "activas")
+        {
+            tareasQuery = tareasQuery.Where(t => t.Estado.NombreEstado != ESTADO_COMPLETADA
+                                              && t.Estado.NombreEstado != ESTADO_CANCELADA);
+        }
+        else if (filtroNormalizado == "completadas")
+        {
+            tareasQuery = tareasQuery.Where(t => t.Estado.NombreEstado == ESTADO_COMPLETADA);
+        }
+        // "todas" no filtra
+ 
+        var todasLasTareas = await tareasQuery
+            .OrderByDescending(t => t.FechaCreacion)
+            .ToListAsync();
+ 
+        // agrupamos en memoria por departamento
+        var tareasPorDepto = todasLasTareas
+            .GroupBy(t => t.DepartamentoId!.Value)
+            .ToDictionary(g => g.Key, g => g.ToList());
+ 
+        return departamentos.Select(depto =>
+        {
+            var tareas = tareasPorDepto.TryGetValue(depto.Id, out var t) ? t : new List<Tarea>();
+ 
+            return new ReporteDepartamentoDto
+            {
+                DepartamentoId = depto.Id,
+                DepartamentoNombre = depto.Nombre,
+                Total = tareas.Count,
+                DesglosePorEstado = tareas
+                    .GroupBy(x => x.Estado.NombreEstado)
+                    .Select(g => new ConteoPorEstadoDto { Estado = g.Key, Cantidad = g.Count() })
+                    .OrderBy(x => x.Estado)
+                    .ToList(),
+                Tareas = tareas.Select(MapearTareaResponse).ToList()
+            };
+        }).ToList();
+    } 
 
 }

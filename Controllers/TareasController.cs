@@ -191,4 +191,25 @@ public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBod
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    [HttpGet("reporte-departamentos")]
+    [Authorize(Roles = "Jefe,Encargado Departamento")]
+    public async Task<ActionResult<IEnumerable<ReporteDepartamentoDto>>> ObtenerReportePorDepartamento(
+        [FromQuery] string filtro = "activas")
+    {
+        try
+        {
+            var reporte = await _tareaService.ObtenerReportePorDepartamentoAsync(
+                filtro,
+                User.ObtenerRol(),
+                User.ObtenerDepartamentosIds());
+            return Ok(reporte);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+
 }

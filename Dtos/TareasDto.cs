@@ -80,3 +80,22 @@ public class TareasPorUsuarioResponseDto
 
 
 }
+
+public class ConteoPorEstadoDto
+{
+    public string Estado {get;set;} = string.Empty;
+    public int Cantidad {get;set;}
+}
+
+
+public class ReporteDepartamentoDto
+{
+    public int DepartamentoId { get; set; }
+    public string DepartamentoNombre { get; set; } = string.Empty;
+    public int Total { get; set; }
+    public List<ConteoPorEstadoDto> DesglosePorEstado { get; set; } = new();
+    public List<TareaResponseDto> Tareas { get; set; } = new();
+
+
+
+}
