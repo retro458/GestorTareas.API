@@ -89,4 +89,19 @@ public async Task<ActionResult<IEnumerable<DepartamentoResponseDto>>> ObtenerIna
     var departamentos = await _departamentoService.ObtenerDepartamentosInactivosAsync();
     return Ok(departamentos);
 }
+[HttpPut("{id}/editar")]
+[Authorize(Roles = "Jefe")]
+public async Task<ActionResult<DepartamentoResponseDto>> EditarDepartamento(int id, [FromBody] EditarDepartamentoDto request)
+{
+    try
+    {
+        var departamento = await _departamentoService.EditarDepartamentoAsync(id, request.Nombre!, request.Descripcion);
+        return Ok(departamento);
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new { error = ex.Message });
+    }
+}
+
 }

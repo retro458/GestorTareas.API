@@ -7,5 +7,6 @@ public interface IDepartamentoService
     Task<IEnumerable<DepartamentoResponseDto>> ObtenerDepartamentosAsync();
     Task<IEnumerable<DepartamentoResponseDto>> ObtenerMisDepartamentosAsync(int usuarioId);
     Task CambiarEstadoActivoAsync(int departamentoId, bool nuevoEstado);
+    Task<DepartamentoResponseDto> EditarDepartamentoAsync(int id, string nombre, string? descripcion);
     Task<IEnumerable<DepartamentoResponseDto>> ObtenerDepartamentosInactivosAsync();
 }

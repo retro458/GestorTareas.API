@@ -100,5 +100,30 @@ public async Task<IEnumerable<DepartamentoResponseDto>> ObtenerDepartamentosInac
         Activo = d.Activo.GetValueOrDefault()
     });
 }
+    public async Task<DepartamentoResponseDto> EditarDepartamentoAsync(int id, string nombre, string? descripcion)
+{
+    var departamento = await _context.Departamentos.FindAsync(id)
+        ?? throw new Exception("El departamento no existe.");
+
+    // que no choque con el nombre de otro departamento (excluyendose a si mismo)
+    var nombreDuplicado = await _context.Departamentos
+        .AnyAsync(d => d.Id != id && d.Nombre == nombre);
+    if (nombreDuplicado)
+        throw new Exception("Ya existe otro departamento con ese nombre.");
+
+    departamento.Nombre = nombre;
+    departamento.Descripcion = descripcion;
+    await _context.SaveChangesAsync();
+
+    return new DepartamentoResponseDto
+    {
+        Id = departamento.Id,
+        Nombre = departamento.Nombre,
+        Descripcion = departamento.Descripcion,
+        Activo = departamento.Activo.GetValueOrDefault()
+    };
+}
+
+
   }
 }
