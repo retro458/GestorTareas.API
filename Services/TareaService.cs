@@ -270,6 +270,23 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
         var tarea = await query.OrderByDescending(t => t.FechaCreacion).ToListAsync();
         return tarea.Select(MapearTareaResponse);
     }
+    // Tareas asignadas al usuario actual, sin importar su rol (Empleado, Encargado o Jefe).
+    // Es la misma regla que CambiarEstadoAsync usa para dejar cambiar el estado: AsignadoA == usuario.
+    public async Task<IEnumerable<TareaResponseDto>> ObtenerMisTareasAsync(int usuarioActualId, bool completadas)
+    {
+        var tareas = await _context.Tareas
+            .Include(t => t.Estado)
+            .Include(t => t.Prioridad)
+            .Include(t => t.AsignadoANavigation)
+            .Where(t => t.AsignadoA == usuarioActualId)
+            .Where(t => completadas
+                ? t.Estado.NombreEstado == ESTADO_COMPLETADA
+                : t.Estado.NombreEstado != ESTADO_COMPLETADA)
+            .OrderByDescending(t => t.FechaCreacion)
+            .ToListAsync();
+
+        return tareas.Select(MapearTareaResponse);
+    }
     public async Task<IEnumerable<TareaResponseDto>> ObtenerTareasAsync(int usuarioActualId, string rolActual, List<int> departamentosActualIds)
     {
         IQueryable<Tarea> query = _context.Tareas
@@ -292,7 +309,7 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
         return tareas.Select(MapearTareaResponse);
     }
  
-   public async Task<TareaResponseDto> CambiarEstadoAsync(int tareaId, int nuevoEstadoId, int usuarioActualId, string rolActual)
+   public async Task<TareaResponseDto> CambiarEstadoAsync(int tareaId, int nuevoEstadoId, int usuarioActualId, string rolActual, List<int> departamentosActualIds)
     {
        var tarea = await _context.Tareas.FindAsync(tareaId)
         ?? throw new Exception("La tarea no existe.");
@@ -307,6 +324,11 @@ if (!empleadoDeptosIds.Contains(dto.DepartamentoId))
         // Solo Jefe o Encargado pueden cancelar
         if (rolActual != "Jefe" && rolActual != "Encargado Departamento")
             throw new UnauthorizedAccessException("Solo un Jefe o Encargado puede cancelar una tarea.");
+
+        // El Encargado solo puede cancelar tareas de departamentos a su cargo
+        if (rolActual == "Encargado Departamento"
+            && (!tarea.DepartamentoId.HasValue || !departamentosActualIds.Contains(tarea.DepartamentoId.Value)))
+            throw new UnauthorizedAccessException("Solo puede cancelar tareas de departamentos a su cargo.");
         }
         else
         {

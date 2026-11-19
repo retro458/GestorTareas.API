@@ -115,6 +115,23 @@ public async Task<ActionResult<TareaResponseDto>> ObtenerCompletadas()
     return Ok(tareas);
 }
 
+// Tareas asignadas al usuario actual (cualquier rol). El filtro por usuario lo hace el servicio.
+[HttpGet("mis-tareas")]
+[Authorize(Roles = "Empleado,Encargado Departamento,Jefe")]
+public async Task<ActionResult<IEnumerable<TareaResponseDto>>> ObtenerMisTareas()
+{
+    var tareas = await _tareaService.ObtenerMisTareasAsync(User.ObtenerUsuarioId(), completadas: false);
+    return Ok(tareas);
+}
+
+[HttpGet("mis-tareas/completadas")]
+[Authorize(Roles = "Empleado,Encargado Departamento,Jefe")]
+public async Task<ActionResult<IEnumerable<TareaResponseDto>>> ObtenerMisTareasCompletadas()
+{
+    var tareas = await _tareaService.ObtenerMisTareasAsync(User.ObtenerUsuarioId(), completadas: true);
+    return Ok(tareas);
+}
+
     [HttpPatch("{id}/estado")]
 public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBody] ActualizarEstadoTareaDto dto)
 {
@@ -124,7 +141,8 @@ public async Task<ActionResult<TareaResponseDto>> CambiarEstado(int id, [FromBod
             id,
             dto.EstadoId,
             User.ObtenerUsuarioId(),
-            User.ObtenerRol()); 
+            User.ObtenerRol(),
+            User.ObtenerDepartamentosIds());
 
         return Ok(tarea);
     }
