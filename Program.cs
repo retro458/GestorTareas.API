@@ -25,6 +25,10 @@ if (string.IsNullOrEmpty(connectionString))
     throw new Exception("DB_CONNECTION_STRING no está configurada en el archivo .env");
 builder.Configuration["ConnectionStrings:DB_CONNECTION_STRING"] = connectionString;
 
+// Modo demo publico (Demo__Activo=true). Apagado por defecto: produccion no cambia.
+var demo = GestorTareas.API.Demo.DemoModo.DesdeConfiguracion(builder.Configuration);
+builder.Services.AddSingleton(demo);
+
 // ============================================================
 // 2. CORS
 // ============================================================
