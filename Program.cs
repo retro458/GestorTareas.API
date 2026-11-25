@@ -151,6 +151,10 @@ builder.Services.AddScoped<GestorTareas.API.Services.INotificacionService, Gesto
 builder.Services.AddScoped<GestorTareas.API.Services.IEstadoService, GestorTareas.API.Services.EstadoService>();
 builder.Services.AddHttpClient<GestorTareas.API.Services.IEmailService, GestorTareas.API.Services.EmailService>();
 builder.Services.AddScoped<GestorTareas.API.Services.IComentarioService, GestorTareas.API.Services.ComentarioService>();
+
+// Modo demo: correo al log, topes, cuentas protegidas y rate limiting del login.
+if (demo.Activo)
+    GestorTareas.API.Demo.DemoExtensiones.AgregarServiciosDemo(builder.Services);
 var app = builder.Build();
 
 // ============================================================
@@ -240,7 +244,8 @@ if (args.Contains("demo-reiniciar"))
 
 // 6. MIDDLEWARE PIPELINE
 // ============================================================
-if (app.Environment.IsDevelopment())
+// Scalar/OpenAPI: solo en desarrollo y nunca en la demo publica.
+if (app.Environment.IsDevelopment() && !demo.Activo)
 {
    app.MapOpenApi();
    app.MapScalarApiReference(options =>
@@ -248,6 +253,9 @@ if (app.Environment.IsDevelopment())
       options.WithOpenApiRoutePattern("/openapi/v1.json");
    });
 }
+
+if (demo.Activo)
+    GestorTareas.API.Demo.DemoExtensiones.UsarDemo(app);
 
 app.UseHttpsRedirection();
 

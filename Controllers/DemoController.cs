@@ -15,5 +15,13 @@ public class DemoController : ControllerBase
     public DemoController(DemoModo demo) => _demo = demo;
 
     [HttpGet]
-    public IActionResult Obtener() => Ok(new { activo = _demo.Activo });
+    public IActionResult Obtener() => _demo.Activo
+        // Las cuentas de demo y sus contrasenas son publicas a proposito: la
+        // pantalla de entrada las muestra. Fuera de la demo no se envian.
+        ? Ok(new
+        {
+            activo = true,
+            cuentas = DemoSembrador.Cuentas.Select(c => new { usuario = c.Usuario, password = c.Password, rol = c.Rol, nombre = c.Nombre }),
+        })
+        : Ok(new { activo = false });
 }
