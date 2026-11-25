@@ -153,6 +153,37 @@ builder.Services.AddHttpClient<GestorTareas.API.Services.IEmailService, GestorTa
 builder.Services.AddScoped<GestorTareas.API.Services.IComentarioService, GestorTareas.API.Services.ComentarioService>();
 var app = builder.Build();
 
+// ============================================================
+// Comando de consola: dotnet GestorTareas.API.dll demo-reiniciar
+// Borra todos los datos y vuelve a sembrar la demo. Solo con Demo__Activo=true;
+// si no, termina con error sin conectarse a la base.
+// ============================================================
+if (args.Contains("demo-reiniciar"))
+{
+    var demoLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Demo");
+    if (!demo.Activo)
+    {
+        demoLogger.LogError("demo-reiniciar solo funciona con Demo__Activo=true. No se tocó la base.");
+        Environment.ExitCode = 1;
+    }
+    else
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await GestorTareas.API.Demo.DemoSembrador.ReiniciarAsync(db, demoLogger);
+        }
+        catch (Exception ex)
+        {
+            demoLogger.LogError(ex, "No se pudo reiniciar la demo.");
+            Environment.ExitCode = 1;
+        }
+    }
+    await app.DisposeAsync(); // vacia los logs antes de salir
+    return;
+}
+
 
 //===========================================================
 // para insertar usuario maestro(admin) en la base de datos
