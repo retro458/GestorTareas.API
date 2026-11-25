@@ -7,6 +7,26 @@ using Scalar.AspNetCore;
 using GestorTareas.API.Data;
 using Microsoft.EntityFrameworkCore;
 using GestorTareas.API.Hubs;
+
+// ============================================================
+// HEALTHCHECK del contenedor: dotnet GestorTareas.API.dll verificar-salud
+// Va antes de todo (no necesita .env ni base). La imagen aspnet no trae curl.
+// ============================================================
+if (args.Contains("verificar-salud"))
+{
+    var puerto = Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS")?.Split(';', ',')[0] ?? "8080";
+    try
+    {
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(4) };
+        var respuesta = await http.GetAsync($"http://127.0.0.1:{puerto}/salud");
+        return respuesta.IsSuccessStatusCode ? 0 : 1;
+    }
+    catch
+    {
+        return 1;
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ============================================================
@@ -185,7 +205,32 @@ if (args.Contains("demo-reiniciar"))
         }
     }
     await app.DisposeAsync(); // vacia los logs antes de salir
-    return;
+    return Environment.ExitCode;
+}
+
+// ============================================================
+// Demo con base vacia: crea las tablas si no hay ninguna y siembra la demo.
+// La base (y su login/usuario) ya deben existir en el servidor. Se reintenta
+// unos segundos por si el contenedor de SQL Server todavia esta arrancando.
+// ============================================================
+if (demo.Activo)
+{
+    var demoLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Demo");
+    for (var intento = 1; ; intento++)
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            await GestorTareas.API.Demo.DemoSembrador.PrepararBaseAsync(
+                scope.ServiceProvider.GetRequiredService<AppDbContext>(), demoLogger);
+            break;
+        }
+        catch (Exception ex) when (intento < 10)
+        {
+            demoLogger.LogWarning("Demo: no se pudo preparar la base (intento {Intento}/10): {Error}", intento, ex.Message);
+            await Task.Delay(TimeSpan.FromSeconds(3));
+        }
+    }
 }
 
 
@@ -263,9 +308,28 @@ app.UseHttpsRedirection();
 app.UseCors(AllowVueApp);
 
 app.UseAuthentication();
+app.UseDefaultFiles(); // sirve wwwroot/index.html en "/" cuando el front va dentro (contenedor)
 app.UseStaticFiles();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<TareasHub>("/hubs/tareas");
+
+// Salud para el HEALTHCHECK del contenedor y monitoreo: la app responde y la base conecta.
+app.MapGet("/salud", async (AppDbContext db) =>
+    await db.Database.CanConnectAsync()
+        ? Results.Ok(new { estado = "ok" })
+        : Results.Json(new { estado = "sin base de datos" }, statusCode: StatusCodes.Status503ServiceUnavailable))
+    .AllowAnonymous();
+
+// Front compilado dentro de wwwroot (imagen del contenedor): las rutas del SPA
+// (/login, /jefe...) devuelven index.html. Las rutas /api que no existen siguen
+// dando 404. Sin index.html (despliegue actual, front aparte) no se agrega nada.
+if (File.Exists(Path.Combine(app.Environment.WebRootPath ?? "", "index.html")))
+{
+    app.Map("/api/{**resto}", () => Results.NotFound());
+    app.MapFallbackToFile("index.html");
+}
+
 app.Run();
+return 0;

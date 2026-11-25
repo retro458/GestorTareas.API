@@ -1,0 +1,9 @@
+# Reinicia los datos de la demo (borra todo y vuelve a sembrar).
+# Corre dentro del contenedor ya levantado, con sus mismas variables.
+[Unit]
+Description=TaskFlow demo: reiniciar datos ficticios
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman exec taskflow-demo dotnet GestorTareas.API.dll demo-reiniciar

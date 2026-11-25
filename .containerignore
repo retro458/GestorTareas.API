@@ -1,0 +1,22 @@
+# Contexto de build: la carpeta que contiene GestorTareas.API/ y GestorTareas.Web/.
+# Nada de secretos, artefactos de build ni historial git dentro de la imagen.
+**/.git
+**/.env
+**/.env.*
+**/*.env
+!**/*.env.example
+**/node_modules
+**/dist
+**/bin
+**/obj
+**/.vscode
+**/.claude
+**/.idea
+
+GestorTareas.API/deploy
+GestorTareas.API/ThreatDragonModels
+GestorTareas.API/dotnet-install.sh
+GestorTareas.API/*.http
+GestorTareas.API/appsettings*.json
+GestorTareas.API/wwwroot/test-signalr.html
+GestorTareas.Web/public/README.md
