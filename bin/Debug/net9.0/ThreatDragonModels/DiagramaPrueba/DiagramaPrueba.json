@@ -1,0 +1,28 @@
+{
+  "version": "2.6.2",
+  "release_version": "1.0.0",
+  "released_at": "2026-09-10",
+  "summary": {
+    "title": "DiagramaPrueba",
+    "owner": "Erick",
+    "description": "Visualizacion de seguridad de api para el gestor de tareas",
+    "id": 0
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "id": 0,
+        "title": "New STRIDE diagram",
+        "diagramType": "STRIDE",
+        "placeholder": "New STRIDE diagram description",
+        "thumbnail": "./public/content/images/thumbnail.stride.jpg",
+        "version": "2.6.2",
+        "cells": []
+      }
+    ],
+    "diagramTop": 1,
+    "reviewer": "Erick",
+    "threatTop": 0
+  }
+}

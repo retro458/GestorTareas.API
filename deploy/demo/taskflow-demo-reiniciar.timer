@@ -1,0 +1,10 @@
+# Todas las noches a las 3:00 (hora del servidor).
+[Unit]
+Description=TaskFlow demo: reinicio nocturno
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
