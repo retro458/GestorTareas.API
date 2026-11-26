@@ -489,3 +489,4 @@ C:/Users/danie/Documents/Sistema/GestorTareas.API/obj/Debug/net9.0/ref/GestorTar
 /home/erickbaudriz/Documents/Sistema/GestorTareas.API/obj/Debug/net9.0/GestorTa.DF737B21.Up2Date
 /home/erickbaudriz/Documents/Sistema/GestorTareas.API/obj/Debug/net9.0/GestorTareas.API.genruntimeconfig.cache
 /home/erickbaudriz/Documents/Sistema/GestorTareas.API/obj/Debug/net9.0/ref/GestorTareas.API.dll
+/home/erickbaudriz/Documents/Sistema/GestorTareas.API/bin/Debug/net9.0/ThreatDragonModels/DiagramaPrueba/DiagramaPrueba.json
